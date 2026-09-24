@@ -1,0 +1,1230 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="加班計算器（開放版）">
+<title>輪班加班時數計算器</title>
+<style>
+  :root {
+    --bg: #F6F5F1;
+    --surface: #FFFFFF;
+    --surface-2: #EFEDE6;
+    --ink: #1C2331;
+    --ink-soft: #6B7280;
+    --ink-faint: #9CA3AF;
+    --border: #E2DFD6;
+    --accent: #C97A1A;
+    --accent-soft: #FBEEDD;
+    --leave: #B4483A;
+    --shift-day: #2455D8;
+    --shift-evening: #BD5A16;
+    --shift-night: #111111;
+    --shift-off: #DC3B30;
+    --shift-off-bg: #FBF5F4;
+    --holiday-special: #B98A1E;
+    --holiday-national: #A8442F;
+    --disaster: #B4483A;
+    --comprest: #2F5FA8;
+    --leave-bg: #EFEBE4;
+    --leave-fg: #7A6A55;
+    --radius: 14px;
+    --mono: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, Consolas, monospace;
+    --sans: -apple-system, BlinkMacSystemFont, "PingFang TC", "Noto Sans TC", "Microsoft JhengHei", "Segoe UI", sans-serif;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #15171C;
+      --surface: #1D2026;
+      --surface-2: #262A32;
+      --ink: #EDEEF0;
+      --ink-soft: #9AA1AC;
+      --ink-faint: #6B7280;
+      --border: #30343C;
+      --accent: #E0A458;
+      --accent-soft: #382C1C;
+      --leave: #E08578;
+      --shift-day: #6E9BE0;
+      --shift-evening: #C98955;
+      --shift-night: #0E1015;
+      --shift-off: #E08578;
+      --shift-off-bg: #241C1B;
+      --holiday-special: #E0B85A;
+      --holiday-national: #E08578;
+      --disaster: #E08578;
+      --comprest: #6E9BE0;
+      --leave-bg: #2A2620;
+      --leave-fg: #B8AA92;
+      color-scheme: dark;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--sans);
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    -webkit-tap-highlight-color: transparent;
+  }
+  .wrap { max-width: 560px; margin: 0 auto; padding: 18px 14px 48px; }
+
+  header.top { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 14px; gap: 6px; }
+  header.top h1 { font-size: 16px; font-weight: 600; margin: 0; letter-spacing: 0.2px; }
+  .icon-btn {
+    background: none; border: none; color: var(--ink-soft); font-size: 12px;
+    font-family: var(--sans); padding: 5px 6px; cursor: pointer; border-radius: 8px; white-space: nowrap;
+  }
+  .icon-btn:active { background: var(--surface-2); }
+  .btn-row { display: flex; gap: 2px; }
+
+  .hero {
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 18px 18px 14px; margin-bottom: 12px;
+  }
+  .hero-top { display: flex; align-items: flex-end; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+  .hero-label { font-size: 12.5px; color: var(--ink-soft); margin: 0 0 4px; }
+  .hero-number { font-family: var(--mono); font-size: 38px; font-weight: 600; line-height: 1; color: var(--accent); letter-spacing: -0.5px; }
+  .hero-number span.unit { font-size: 14px; font-weight: 500; color: var(--ink-soft); margin-left: 4px; font-family: var(--sans); }
+  .hero-side { text-align: right; font-size: 12px; color: var(--ink-soft); }
+  .hero-side .val { font-family: var(--mono); font-size: 17px; color: var(--ink); display: block; }
+  .trend { display: flex; align-items: flex-end; gap: 5px; height: 36px; margin-top: 14px; }
+  .trend .bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; }
+  .trend .bar { width: 100%; max-width: 26px; background: var(--surface-2); border-radius: 3px 3px 0 0; min-height: 3px; }
+  .trend .bar.current { background: var(--accent); }
+  .trend .bar-label { font-size: 9px; color: var(--ink-faint); font-family: var(--mono); }
+
+  .breakdown { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 4px 14px 10px; margin-bottom: 12px; }
+  .breakdown table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  .breakdown th { text-align: right; font-weight: 500; color: var(--ink-faint); font-size: 10.5px; padding: 8px 0 4px; }
+  .breakdown th:first-child { text-align: left; }
+  .breakdown td { padding: 6px 0; border-top: 1px solid var(--border); text-align: right; font-family: var(--mono); }
+  .breakdown td:first-child { text-align: left; font-family: var(--sans); color: var(--ink); }
+  .breakdown tr.total td { font-weight: 700; color: var(--accent); border-top: 1.5px solid var(--ink-faint); }
+  .breakdown tr.zero td { color: var(--ink-faint); }
+  .breakdown tr.manual-report td { border-top: 1px solid var(--border); padding-top: 8px; }
+  .breakdown tr.manual-report.zero td b { color: var(--ink-faint); font-weight: 600; }
+  .breakdown tr.cat-row { cursor: pointer; }
+  .breakdown tr.cat-row:active td { background: var(--surface-2); }
+  .breakdown tr.cat-row.open td:first-child::after { content: " ▾"; color: var(--ink-faint); font-size: 10px; }
+  .breakdown tr.cat-detail td { padding: 8px 0 10px; border-top: none; }
+  .cat-detail-empty { font-size: 11.5px; color: var(--ink-faint); padding: 4px 0; }
+  .cat-detail-list { display: flex; flex-direction: column; gap: 4px; background: var(--surface-2); border-radius: 8px; padding: 8px 10px; }
+  .cat-detail-item { display: flex; justify-content: space-between; font-size: 11.5px; font-family: var(--mono); color: var(--ink-soft); }
+
+  .period-nav { display: flex; align-items: center; justify-content: space-between; margin: 18px 0 8px; }
+  .period-nav button { background: var(--surface); border: 1px solid var(--border); color: var(--ink); width: 32px; height: 32px; border-radius: 10px; font-size: 16px; cursor: pointer; }
+  .period-nav button:active { background: var(--surface-2); }
+  .period-nav .plabel { text-align: center; }
+  .period-nav h2 { font-size: 15px; font-weight: 600; margin: 0; }
+  .period-nav .psub { font-size: 11px; color: var(--ink-faint); font-family: var(--mono); }
+  .today-btn {
+    display: inline-flex; align-items: center; justify-content: center; height: 30px;
+    margin: 0 auto 6px; padding: 0 24px; border: 1px solid #4C8F52; box-sizing: border-box;
+    background: #5B9A5B; color: #fff; font-family: var(--sans); font-size: 11.5px;
+    font-weight: 600; line-height: normal; border-radius: 999px; cursor: pointer; text-align: center;
+    white-space: nowrap; width: fit-content; overflow: hidden;
+  }
+  .today-btn:active { background: #4C8F52; }
+
+  .quick-stats { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+  .qs-pill { font-size: 11.5px; color: var(--ink-soft); background: var(--surface); border: 1px solid var(--border); border-radius: 999px; padding: 4px 9px; font-family: var(--mono); }
+  .qs-pill b { color: var(--ink); font-weight: 600; }
+
+  .weekday-row { display: grid; grid-template-columns: repeat(7, 1fr); margin-bottom: 4px; background: #1a1a1a; border-radius: 8px; overflow: hidden; }
+  .weekday-row div { text-align: center; font-size: 13px; font-weight: 700; color: #fff; padding: 7px 0; }
+  .weekday-row div:first-child { color: #FF6B6B; }
+  .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; }
+  .grid.slide-next { animation: slideNext 0.22s ease; }
+  .grid.slide-prev { animation: slidePrev 0.22s ease; }
+  @keyframes slideNext { from { transform: translateX(22px); opacity: 0.3; } to { transform: translateX(0); opacity: 1; } }
+  @keyframes slidePrev { from { transform: translateX(-22px); opacity: 0.3; } to { transform: translateX(0); opacity: 1; } }
+  .cell {
+    aspect-ratio: 1 / 1.25; border-radius: 4px; border: 1px solid var(--border); background: var(--surface);
+    position: relative; cursor: pointer; padding: 3px 3px 4px; display: flex; flex-direction: column;
+    justify-content: space-between; overflow: hidden;
+  }
+  .cell.blank { border: none; background: transparent; cursor: default; }
+  .grid > .cell:nth-child(7n+1):not(.blank), .grid > .cell:nth-child(7n):not(.blank) { background: #FBEAF3; }
+  @media (prefers-color-scheme: dark) {
+    .grid > .cell:nth-child(7n+1):not(.blank), .grid > .cell:nth-child(7n):not(.blank) { background: #2E2129; }
+  }
+  .cell.today { border: 2px solid var(--accent); }
+  .cell.disaster-day { border: 2px solid var(--disaster); background: color-mix(in srgb, var(--disaster) 10%, var(--surface)); }
+  .cell .date-num { font-size: 12.5px; font-weight: 700; color: var(--ink); font-family: var(--sans); display: flex; align-items: center; justify-content: flex-start; gap: 2px; overflow: hidden; white-space: nowrap; }
+  .cell .shift-label { position: relative; font-size: 12.5px; font-weight: 700; text-align: center; border-radius: 4px; padding: 5px 0; line-height: 1.15; flex: 1; display: flex; align-items: center; justify-content: center; margin-top: 2px; }
+  .cell .leave-label { position: relative; font-size: 11px; font-weight: 700; text-align: center; border-radius: 4px; padding: 5px 0; background: var(--leave-bg); color: var(--leave-fg); line-height: 1.15; flex: 1; display: flex; align-items: center; justify-content: center; margin-top: 2px; }
+  .cell .disaster-mark { position: absolute; bottom: 2px; left: 4px; font-size: 8px; font-weight: 800; color: #fff; line-height: 1; white-space: nowrap; }
+  .cell .comprest-mark { position: absolute; top: 2px; left: 4px; font-size: 8px; font-weight: 800; color: #fff; line-height: 1; }
+  .cell .adj-badge { position: absolute; bottom: 1px; right: 1px; font-size: 8px; font-family: var(--mono); font-weight: 700; padding: 1px 3px; border-radius: 4px; color: #fff; background: #5B9A5B; z-index: 2; }
+  .cell .hol-tag { font-family: var(--sans); font-size: 7.5px; font-weight: 700; padding: 0 2px; border-radius: 3px; color: #fff; white-space: nowrap; line-height: 1.5; flex-shrink: 0; }
+  .cell .hol-tag.special { background: var(--holiday-special); }
+  .cell .hol-tag.national { background: var(--holiday-national); }
+
+  .history { margin-top: 24px; }
+  .history h3 { font-size: 12.5px; color: var(--ink-soft); font-weight: 600; margin: 0 0 8px; }
+  .history-row { display: flex; justify-content: space-between; align-items: center; padding: 9px 12px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; margin-bottom: 6px; cursor: pointer; font-size: 12.5px; }
+  .history-row .n { font-family: var(--mono); color: var(--accent); font-weight: 600; }
+  .history-empty { font-size: 12.5px; color: var(--ink-faint); padding: 10px 2px; }
+
+  footer.note { text-align: center; font-size: 10.5px; color: var(--ink-faint); margin-top: 26px; line-height: 1.7; }
+  footer.note button { background: none; border: none; color: var(--ink-soft); text-decoration: underline; font-size: 10.5px; cursor: pointer; padding: 0; font-family: var(--sans); }
+
+  .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); display: none; align-items: flex-end; z-index: 50; }
+  .overlay.open { display: flex; }
+  .sheet {
+    background: var(--surface); width: 100%; max-width: 560px; margin: 0 auto; border-radius: 18px 18px 0 0;
+    max-height: 88vh; display: flex; flex-direction: column; overflow: hidden;
+  }
+  .sheet-title { font-size: 15px; font-weight: 600; margin: 0; }
+  .sheet-title .sub { display: block; font-size: 11.5px; color: var(--ink-faint); font-weight: 400; margin-top: 2px; }
+  .sheet-head { display: flex; align-items: flex-start; justify-content: space-between; padding: 16px 16px 0; flex-shrink: 0; }
+  .sheet-body { overflow-y: auto; padding: 12px 16px 4px; flex: 1 1 auto; min-height: 0; -webkit-overflow-scrolling: touch; }
+  .close-x {
+    background: var(--surface-2); border: none; color: var(--ink-soft); width: 28px; height: 28px;
+    border-radius: 50%; font-size: 18px; line-height: 1; cursor: pointer; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center; margin-left: 10px;
+  }
+  .close-x:active { background: var(--border); }
+  .field-label { font-size: 11.5px; color: var(--ink-soft); margin: 14px 0 6px; }
+  .field-label:first-of-type { margin-top: 0; }
+  .btn-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; }
+  .opt-btn { padding: 9px 0; border-radius: 9px; border: 1.5px solid var(--border); background: var(--surface); color: var(--ink); font-size: 12.5px; font-weight: 600; font-family: var(--sans); cursor: pointer; }
+  .opt-btn.selected { border-color: var(--accent); box-shadow: 0 0 0 1.5px var(--accent) inset; }
+  .opt-btn.clear-btn { grid-column: span 3; color: var(--ink-soft); font-weight: 500; }
+  .adj-input-row { display: flex; gap: 8px; margin-bottom: 8px; }
+  .adj-input-row input, .form-input { flex: 1; font-family: var(--mono); font-size: 15px; padding: 9px 11px; border-radius: 9px; border: 1.5px solid var(--border); background: var(--bg); color: var(--ink); width: 100%; }
+  .preset-row { display: flex; gap: 6px; flex-wrap: wrap; }
+  .preset-btn { font-family: var(--mono); font-size: 11.5px; padding: 5px 9px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface-2); color: var(--ink-soft); cursor: pointer; }
+  .check-row { display: flex; align-items: center; gap: 8px; padding: 9px 0; font-size: 13px; }
+  .check-row input { width: 18px; height: 18px; }
+  .hol-info { font-size: 12px; padding: 8px 10px; background: var(--surface-2); border-radius: 8px; color: var(--ink-soft); margin-top: 4px; }
+  .preview-box { margin-top: 14px; padding: 10px 12px; background: var(--surface-2); border-radius: 10px; font-size: 11.5px; color: var(--ink-soft); }
+  .preview-box .prow { display: flex; justify-content: space-between; font-family: var(--mono); }
+  .preview-box .ptitle { font-family: var(--sans); font-size: 11px; color: var(--ink-faint); margin-bottom: 4px; }
+  .sheet-actions { display: flex; gap: 8px; padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px)); flex-shrink: 0; box-shadow: 0 -6px 10px -6px rgba(0,0,0,0.25); }
+  .sheet-actions button { flex: 1; padding: 11px 0; border-radius: 10px; font-size: 14px; font-weight: 600; font-family: var(--sans); border: none; cursor: pointer; }
+  .btn-cancel { background: var(--surface-2); color: var(--ink-soft); }
+  .btn-save { background: var(--accent); color: #fff; }
+
+  .hol-row { display: flex; justify-content: space-between; align-items: center; padding: 9px 10px; background: var(--surface-2); border-radius: 9px; margin-bottom: 6px; font-size: 12.5px; }
+  .hol-row .htype { font-size: 10px; padding: 2px 6px; border-radius: 999px; color: #fff; margin-left: 6px; }
+  .hol-row .htype.special { background: var(--holiday-special); }
+  .hol-row .htype.national { background: var(--holiday-national); }
+  .hol-row button { background: none; border: none; color: var(--leave); font-size: 12px; cursor: pointer; }
+  .hol-add-form { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); }
+
+  .toast { position: fixed; bottom: calc(24px + env(safe-area-inset-bottom, 0px)); left: 50%; transform: translateX(-50%) translateY(10px); background: var(--ink); color: var(--bg); padding: 9px 16px; border-radius: 999px; font-size: 12.5px; opacity: 0; pointer-events: none; transition: opacity 0.2s, transform 0.2s; z-index: 80; white-space: nowrap; }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <h1>輪班加班時數計算器</h1>
+    <div class="btn-row">
+      <button class="icon-btn" id="groupBtn">班別群組</button><button class="icon-btn" id="holBtn">假日</button><button class="icon-btn" id="importBtn">匯入</button><button class="icon-btn" id="exportBtn">匯出</button>
+    </div>
+  </header>
+
+  <div class="period-nav">
+    <button id="prevPeriod" aria-label="上期">‹</button>
+    <div class="plabel">
+      <button type="button" class="today-btn" id="todayBtn">本月</button>
+      <h2 id="periodLabel">2026年10月份</h2>
+      <div class="psub" id="periodSub">9/16–10/15</div>
+    </div>
+    <button id="nextPeriod" aria-label="下期">›</button>
+  </div>
+
+  <div class="weekday-row"><div>日</div><div>一</div><div>二</div><div>三</div><div>四</div><div>五</div><div>六</div></div>
+  <div class="grid" id="calGrid"></div>
+
+  <section class="hero" style="margin-top:14px">
+    <div class="hero-top">
+      <div>
+        <p class="hero-label">本期延長工時合計</p>
+        <div class="hero-number" id="heroOT">0.0<span class="unit">小時</span></div>
+      </div>
+      <div class="hero-side">
+        加權後<span class="val" id="heroWeighted">0.0</span>
+      </div>
+    </div>
+    <div class="trend" id="trendChart"></div>
+  </section>
+
+  <div class="breakdown">
+    <table>
+      <thead><tr><th>類別</th><th>原始</th><th>加權後</th></tr></thead>
+      <tbody id="breakdownBody"></tbody>
+    </table>
+  </div>
+
+  <footer class="note">
+    資料儲存在這個瀏覽器裡，清除瀏覽器資料會遺失，建議定期按「匯出」備份。<br>
+    <button id="resetBtn">清空所有資料</button>
+  </footer>
+</div>
+
+<input type="file" id="importFile" accept="application/json" style="display:none">
+
+<div class="overlay" id="overlay">
+  <div class="sheet">
+    <div class="sheet-head">
+      <p class="sheet-title" id="sheetTitle">9月22日<span class="sub">週二</span></p>
+      <button type="button" class="close-x" id="closeXBtn" aria-label="關閉">×</button>
+    </div>
+
+    <div class="sheet-body">
+      <p class="field-label">班別</p>
+      <div class="hol-info" id="shiftInfo" style="display:none"></div>
+      <div class="btn-grid" id="typeGrid"></div>
+
+      <p class="field-label">加班時數（小時）</p>
+      <div class="adj-input-row"><input type="number" step="0.5" min="0" id="otInput" placeholder="0"></div>
+      <div class="preset-row" id="otPresetRow"></div>
+
+      <p class="field-label">請假</p>
+      <div class="btn-grid" id="leaveGrid"></div>
+
+      <p class="field-label">特殊標記</p>
+      <div class="btn-grid" style="grid-template-columns:1fr 1fr" id="flagGrid">
+        <button type="button" class="opt-btn" id="disasterBtn">天然災害停班</button>
+        <button type="button" class="opt-btn" id="compRestBtn">休息日加班</button>
+      </div>
+
+      <div class="hol-info" id="holInfo" style="display:none"></div>
+
+      <div class="preview-box" id="previewBox"></div>
+    </div>
+
+    <div class="sheet-actions">
+      <button class="btn-cancel" id="cancelBtn">取消</button>
+      <button class="btn-save" id="saveBtn">儲存</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="groupOverlay">
+  <div class="sheet">
+    <div class="sheet-head">
+      <p class="sheet-title">請選擇你的班別群組<span class="sub">之後可以在右上角「班別群組」重新選擇</span></p>
+      <button type="button" class="close-x" id="groupCloseXBtn" aria-label="關閉">×</button>
+    </div>
+    <div class="sheet-body">
+      <div id="groupList"></div>
+      <p class="field-label" style="margin-top:18px">說明</p>
+      <div class="hol-info">中16A／B／C／D班採 8 天循環（白班白班小夜小夜小休大夜大夜大休），中21AD／BC班採 16 天循環（含 08~20、12~24 兩種 12 小時班），選了之後班別會自動排好。如果都不是，選「其他／手動輸入」，自己每天手動點選班別就可以了。</div>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="holOverlay">
+  <div class="sheet">
+    <div class="sheet-head">
+      <p class="sheet-title">假日行事曆管理</p>
+      <button type="button" class="close-x" id="holCloseXBtn" aria-label="關閉">×</button>
+    </div>
+    <div class="sheet-body">
+      <div id="holList"></div>
+      <div class="hol-add-form">
+        <p class="field-label" style="margin-top:0">新增／編輯假日</p>
+        <input type="date" class="form-input" id="holDateInput">
+        <input type="text" class="form-input" id="holNameInput" placeholder="假日名稱，例如：中秋節">
+        <div class="btn-grid" style="grid-template-columns:1fr 1fr">
+          <button class="opt-btn" id="holTypeSpecial">特殊節日</button>
+          <button class="opt-btn" id="holTypeNational">國定假日</button>
+        </div>
+        <div class="check-row"><input type="checkbox" id="holCnyCheck"><label for="holCnyCheck">屬於除夕／初一／初二（特休補休適用）</label></div>
+      </div>
+    </div>
+    <div class="sheet-actions">
+      <button class="btn-cancel" id="holCancelBtn">關閉</button>
+      <button class="btn-save" id="holSaveBtn">新增／更新</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  "use strict";
+
+  var V1_KEY = "shiftOvertimeData_public_v1_legacy";
+  var V2_KEY = "shiftOvertimeData_public_v2";
+  var WEEKDAY_NAMES = ["日","一","二","三","四","五","六"];
+  var SHIFT_TYPES = ["白班","小夜","大夜","08~20","12~24","大休","小休"];
+  var LEAVE_TYPES = ["事假","病假","特休","例假","公假"];
+  var RATE = { otNormal: 1.33, otOver: 1.66 };
+
+  var SHIFT_META = {
+    "白班": { fg:"#fff", bg:"var(--shift-day)" },
+    "小夜": { fg:"#fff", bg:"var(--shift-evening)" },
+    "大夜": { fg:"#fff", bg:"var(--shift-night)" },
+    "08~20": { fg:"#3A3000", bg:"#E8C500" },
+    "12~24": { fg:"#fff", bg:"#2F6B3F" },
+    "大休": { fg:"var(--shift-off)", bg:"var(--shift-off-bg)", border:"2px solid var(--shift-off)" },
+    "小休": { fg:"var(--shift-off)", bg:"var(--shift-off-bg)", border:"1.5px dashed var(--shift-off)" }
+  };
+  var SHIFT_HOURS = { "白班":8, "小夜":8, "大夜":8, "08~20":12, "12~24":12 };
+
+  var CATEGORIES = [
+    { key:"handover",     label:"交接班",                 rate:1 },
+    { key:"otNormal",     label:"平日加班（前2hr）",       rate:RATE.otNormal },
+    { key:"otOver",       label:"超時加班（超過2hr）",     rate:RATE.otOver },
+    { key:"compRestOT",   label:"休息日加班（制度）",      rate:1 },
+    { key:"statHoliday",  label:"國定加班",                rate:1 },
+    { key:"bonus",        label:"獎工時數",                rate:1 },
+    { key:"disasterOT",   label:"天災出勤加班",            rate:1 },
+    { key:"cnyLeaveComp", label:"特休補休（除夕初一初二）",rate:1 }
+  ];
+  var MANUAL_REPORT_CAT = { key:"manualReport", label:"手寫另報", rate:1 };
+
+  var HOLIDAYS_DEFAULT = {
+    "2026-01-01": {name:"元旦",     type:"特殊節日", cny:false},
+    "2026-02-16": {name:"除夕",     type:"特殊節日", cny:true},
+    "2026-02-17": {name:"初一",     type:"特殊節日", cny:true},
+    "2026-02-18": {name:"初二",     type:"特殊節日", cny:true},
+    "2026-02-19": {name:"春節初三", type:"國定假日", cny:false},
+    "2026-02-28": {name:"和平紀念日", type:"國定假日", cny:false},
+    "2026-04-04": {name:"兒童節",   type:"國定假日", cny:false},
+    "2026-04-05": {name:"清明節",   type:"國定假日", cny:false},
+    "2026-05-01": {name:"勞動節",   type:"國定假日", cny:false},
+    "2026-06-19": {name:"端午節",   type:"國定假日", cny:false},
+    "2026-09-25": {name:"中秋節",   type:"特殊節日", cny:false},
+    "2026-10-10": {name:"國慶日",   type:"國定假日", cny:false}
+  };
+
+  var PRESET_V1 = {};
+
+  function mkCycle(shifts, noHandoverSet){
+    return shifts.map(function(s, i){ return { shift: s, noHandover: !!(noHandoverSet && noHandoverSet.indexOf(i) !== -1) }; });
+  }
+  var CYCLE_8 = mkCycle(["白班","白班","小夜","小夜","小休","大夜","大夜","大休"]);
+  var CYCLE_21AD = mkCycle(
+    ["大休","12~24","小夜","小夜","小休","白班","白班","白班","大休","小夜","小夜","小夜","小休","08~20","白班","白班"],
+    [1,5,9,13]
+  );
+  var CYCLE_21BC = mkCycle(
+    ["小夜","小休","白班","白班","08~20","大休","小夜","小夜","12~24","小休","白班","白班","白班","大休","小夜","小夜"],
+    [0,4,8,12]
+  );
+  var GROUP_CYCLES = {
+    "中16A班": { cycle: CYCLE_8, anchor: "2026-06-08" },
+    "中16B班": { cycle: CYCLE_8, anchor: "2026-09-02" },
+    "中16C班": { cycle: CYCLE_8, anchor: "2026-08-31" },
+    "中16D班": { cycle: CYCLE_8, anchor: "2026-07-04" },
+    "中21AD班": { cycle: CYCLE_21AD, anchor: "2026-09-01" },
+    "中21BC班": { cycle: CYCLE_21BC, anchor: "2026-09-01" },
+    "其他／手動輸入": null
+  };
+  var GROUP_LIST = Object.keys(GROUP_CYCLES);
+
+  var STORE = { entries:{}, holidays:{}, disasters:{}, compRest:{}, group:"" };
+  var today = new Date();
+  var todayKey = fmtKey(today.getFullYear(), today.getMonth(), today.getDate());
+  var curPeriod = getCurrentPeriodKey();
+  var editingKey = null;
+  var pendingType = "", pendingLeave = "";
+  var pendingDisaster = false, pendingCompRest = false;
+
+  // ---------- persistence ----------
+  function migrateV1ToEntries(v1){
+    var entries = {};
+    Object.keys(v1).forEach(function(k){
+      var e = v1[k];
+      entries[k] = { shiftType: e.type || "", otHours: (e.adj > 0 ? e.adj : 0), leaveType: "" };
+    });
+    return entries;
+  }
+
+  function loadData(){
+    try {
+      var raw = localStorage.getItem(V2_KEY);
+      if (raw){
+        STORE = JSON.parse(raw);
+        if (!STORE.entries) STORE.entries = {};
+        if (!STORE.holidays) STORE.holidays = JSON.parse(JSON.stringify(HOLIDAYS_DEFAULT));
+        if (!STORE.disasters) STORE.disasters = {};
+        if (!STORE.compRest) STORE.compRest = {};
+        if (!STORE.group) STORE.group = "";
+        return;
+      }
+      var v1raw = localStorage.getItem(V1_KEY);
+      if (v1raw){
+        var v1 = JSON.parse(v1raw);
+        STORE = { entries: migrateV1ToEntries(v1), holidays: JSON.parse(JSON.stringify(HOLIDAYS_DEFAULT)), disasters:{}, compRest:{}, group:"" };
+        saveData();
+        return;
+      }
+      STORE = { entries: migrateV1ToEntries(PRESET_V1), holidays: JSON.parse(JSON.stringify(HOLIDAYS_DEFAULT)), disasters:{}, compRest:{}, group:"" };
+      saveData();
+    } catch(e){
+      STORE = { entries: migrateV1ToEntries(PRESET_V1), holidays: JSON.parse(JSON.stringify(HOLIDAYS_DEFAULT)), disasters:{}, compRest:{}, group:"" };
+    }
+  }
+  function saveData(){
+    try { localStorage.setItem(V2_KEY, JSON.stringify(STORE)); } catch(e){}
+  }
+
+  // ---------- date / period helpers ----------
+  function pad2(n){ return n < 10 ? "0"+n : ""+n; }
+  function fmtKey(y,m,d){ return y+"-"+pad2(m+1)+"-"+pad2(d); }
+  function parseKey(k){ var p = k.split("-").map(Number); return { y:p[0], m:p[1]-1, d:p[2] }; }
+  function addDays(key, delta){
+    var p = parseKey(key);
+    var d = new Date(p.y, p.m, p.d);
+    d.setDate(d.getDate()+delta);
+    return fmtKey(d.getFullYear(), d.getMonth(), d.getDate());
+  }
+  function daysInMonth(y,m){ return new Date(y, m+1, 0).getDate(); }
+  function monthDates(y,m){
+    var n = daysInMonth(y,m);
+    var dates = [];
+    for (var d=1; d<=n; d++) dates.push(fmtKey(y,m,d));
+    return dates;
+  }
+  function groupCyclePos(dateKey){
+    var gc = GROUP_CYCLES[STORE.group];
+    if (!gc) return null;
+    var a = parseKey(gc.anchor);
+    var anchorDate = new Date(a.y, a.m, a.d);
+    var p = parseKey(dateKey);
+    var d = new Date(p.y, p.m, p.d);
+    var diffDays = Math.round((d.getTime() - anchorDate.getTime()) / 86400000);
+    var idx = ((diffDays % gc.cycle.length) + gc.cycle.length) % gc.cycle.length;
+    return gc.cycle[idx];
+  }
+  function derivedShiftType(dateKey){
+    var pos = groupCyclePos(dateKey);
+    return pos ? pos.shift : "";
+  }
+  function derivedNoHandover(dateKey){
+    var pos = groupCyclePos(dateKey);
+    return pos ? !!pos.noHandover : false;
+  }
+  function effectiveShiftType(dateKey){
+    var e = STORE.entries[dateKey];
+    if (e && e.shiftType) return e.shiftType;
+    return derivedShiftType(dateKey);
+  }
+  function getCurrentPeriodKey(){
+    var y = today.getFullYear(), m = today.getMonth()+1, d = today.getDate();
+    if (d >= 16){ m += 1; if (m > 12){ m = 1; y += 1; } }
+    return y + "-" + pad2(m);
+  }
+  function shiftPeriod(periodKey, delta){
+    var p = periodKey.split("-").map(Number);
+    var d = new Date(p[0], p[1]-1+delta, 1);
+    return d.getFullYear() + "-" + pad2(d.getMonth()+1);
+  }
+  function periodDates(periodKey){
+    var p = periodKey.split("-").map(Number);
+    var y = p[0], m = p[1];
+    var start = new Date(y, m-2, 16);
+    var end = new Date(y, m-1, 15);
+    var dates = [];
+    var cur = new Date(start);
+    while (cur.getTime() <= end.getTime()){
+      dates.push(fmtKey(cur.getFullYear(), cur.getMonth(), cur.getDate()));
+      cur.setDate(cur.getDate()+1);
+    }
+    return dates;
+  }
+  function periodLabel(periodKey){
+    var p = periodKey.split("-").map(Number);
+    var y = p[0], m = p[1];
+    var prevM = m-1, prevY = y;
+    if (prevM === 0){ prevM = 12; prevY = y-1; }
+    var mainY = prevY === y ? y : prevY;
+    return { main: mainY+"年"+prevM+"-"+m+"月", sub: prevM+"/16–"+m+"/15" };
+  }
+
+  // ---------- calculation ----------
+  function disasterOvertimeHoursForShift(shiftType, dateKey, disasters, shiftHours){
+    if (shiftType === "大夜"){
+      var prevKey = addDays(dateKey, -1);
+      var h = 0;
+      if (disasters[prevKey]) h += 0.25;
+      if (disasters[dateKey]) h += 7.75;
+      return h;
+    }
+    if (shiftType === "白班" || shiftType === "小夜" || shiftType === "08~20" || shiftType === "12~24"){
+      return disasters[dateKey] ? shiftHours : 0;
+    }
+    return 0;
+  }
+
+  function computeDay(dateKey){
+    var result = { handover:0, otNormal:0, otOver:0, compRestOT:0, statHoliday:0, bonus:0, disasterOT:0, cnyLeaveComp:0, manualReport:0 };
+    var entry = STORE.entries[dateKey] || {};
+    var shift = entry.shiftType || derivedShiftType(dateKey);
+    var ot = entry.otHours || 0;
+    var leave = entry.leaveType || "";
+    var isWorkShift = (shift === "白班" || shift === "小夜" || shift === "大夜" || shift === "08~20" || shift === "12~24");
+    var worked = isWorkShift && !leave;
+
+    if (worked){
+      var noHandover = entry.shiftType ? false : derivedNoHandover(dateKey);
+      var isCompRest = !!STORE.compRest[dateKey];
+      if (isCompRest){
+        result.compRestOT += 8;
+        if (!noHandover){ if (ot < 4) result.compRestOT += 0.5; else result.manualReport += 0.5; }
+      } else {
+        if (!noHandover){ if (ot < 4) result.handover += 0.5; else result.manualReport += 0.5; }
+      }
+      result.otNormal += Math.min(2, ot);
+      result.otOver += Math.max(0, ot - 2);
+
+      var hol = STORE.holidays[dateKey];
+      if (hol){
+        result.statHoliday += 8;
+        if (hol.type === "特殊節日") result.bonus += 8;
+      }
+      result.disasterOT += disasterOvertimeHoursForShift(shift, dateKey, STORE.disasters, 8);
+    }
+
+    if (leave === "特休" || leave === "例假"){
+      var hol2 = STORE.holidays[dateKey];
+      if (hol2 && hol2.cny) result.cnyLeaveComp += 8;
+    }
+    return result;
+  }
+
+  function sumInto(target, add){
+    Object.keys(add).forEach(function(k){ target[k] = (target[k]||0) + add[k]; });
+  }
+
+  function periodTotals(periodKey){
+    var totals = { handover:0, otNormal:0, otOver:0, compRestOT:0, statHoliday:0, bonus:0, disasterOT:0, cnyLeaveComp:0, manualReport:0 };
+    periodDates(periodKey).forEach(function(dk){ sumInto(totals, computeDay(dk)); });
+    totals.otTotalRaw = 0; totals.otTotalWeighted = 0;
+    CATEGORIES.forEach(function(cat){
+      var raw = totals[cat.key] || 0;
+      totals.otTotalRaw += raw;
+      totals.otTotalWeighted += raw * cat.rate;
+    });
+    return totals;
+  }
+
+  function monthShiftCounts(y,m){
+    var counts = {"白班":0,"小夜":0,"大夜":0,"大休":0,"小休":0};
+    monthDates(y,m).forEach(function(dk){
+      var s = effectiveShiftType(dk);
+      if (counts.hasOwnProperty(s)) counts[s]++;
+    });
+    return counts;
+  }
+
+  // ---------- toast ----------
+  function showToast(msg){
+    var t = document.getElementById("toast");
+    t.textContent = msg;
+    t.classList.add("show");
+    clearTimeout(showToast._tm);
+    showToast._tm = setTimeout(function(){ t.classList.remove("show"); }, 1800);
+  }
+
+  // ---------- render ----------
+  function renderAll(){
+    var lbl = periodLabel(curPeriod);
+    document.getElementById("periodLabel").textContent = lbl.main;
+    document.getElementById("periodSub").textContent = lbl.sub;
+    renderHero();
+    renderBreakdown();
+    renderCalendar();
+  }
+
+  function renderHero(){
+    var t = periodTotals(curPeriod);
+    document.getElementById("heroOT").innerHTML = t.otTotalRaw.toFixed(1) + '<span class="unit">小時</span>';
+    document.getElementById("heroWeighted").textContent = t.otTotalWeighted.toFixed(2);
+    renderTrend();
+  }
+
+  function renderTrend(){
+    var el = document.getElementById("trendChart");
+    el.innerHTML = "";
+    var periods = [];
+    var p = curPeriod;
+    for (var i = 5; i >= 0; i--){ periods.push(shiftPeriod(curPeriod, -i)); }
+    var vals = periods.map(function(pk){ return periodTotals(pk).otTotalRaw; });
+    var max = Math.max.apply(null, vals.concat([1]));
+    periods.forEach(function(pk, i){
+      var col = document.createElement("div");
+      col.className = "bar-col";
+      var bar = document.createElement("div");
+      bar.className = "bar" + (pk === curPeriod ? " current" : "");
+      var h = Math.max(3, Math.round((vals[i]/max) * 30));
+      bar.style.height = h + "px";
+      var label = document.createElement("div");
+      label.className = "bar-label";
+      var mm = parseInt(pk.split("-")[1],10);
+      label.textContent = mm + "月";
+      col.appendChild(bar); col.appendChild(label);
+      el.appendChild(col);
+    });
+  }
+
+  function renderBreakdown(){
+    var t = periodTotals(curPeriod);
+    var tbody = document.getElementById("breakdownBody");
+    tbody.innerHTML = "";
+    CATEGORIES.forEach(function(cat){
+      var raw = t[cat.key] || 0;
+      var weighted = raw * cat.rate;
+      var tr = document.createElement("tr");
+      tr.className = "cat-row" + (raw === 0 ? " zero" : "");
+      tr.innerHTML = "<td>" + cat.label + "</td><td>" + raw.toFixed(1) + "</td><td>" + weighted.toFixed(2) + "</td>";
+      tr.addEventListener("click", function(){ toggleCatDetail(cat.key, tr); });
+      tbody.appendChild(tr);
+    });
+    var totalTr = document.createElement("tr");
+    totalTr.className = "total";
+    totalTr.innerHTML = "<td>延長工時合計</td><td>" + t.otTotalRaw.toFixed(1) + "</td><td>" + t.otTotalWeighted.toFixed(2) + "</td>";
+    tbody.appendChild(totalTr);
+
+    var mr = t.manualReport || 0;
+    var mrTr = document.createElement("tr");
+    mrTr.className = "manual-report cat-row" + (mr === 0 ? " zero" : "");
+    mrTr.innerHTML = "<td><b>" + MANUAL_REPORT_CAT.label + "</b></td><td><b>" + mr.toFixed(1) + "</b></td><td><b>" + (mr*MANUAL_REPORT_CAT.rate).toFixed(2) + "</b></td>";
+    mrTr.addEventListener("click", function(){ toggleCatDetail("manualReport", mrTr); });
+    tbody.appendChild(mrTr);
+  }
+
+  function toggleCatDetail(key, rowEl){
+    var existing = document.querySelectorAll("#breakdownBody .cat-detail");
+    var wasOpenForThis = rowEl.nextElementSibling && rowEl.nextElementSibling.classList.contains("cat-detail") && rowEl.nextElementSibling.dataset.forKey === key;
+    Array.prototype.forEach.call(existing, function(el){ el.remove(); });
+    Array.prototype.forEach.call(document.querySelectorAll("#breakdownBody .cat-row.open"), function(el){ el.classList.remove("open"); });
+    if (wasOpenForThis) return;
+
+    var days = [];
+    periodDates(curPeriod).forEach(function(dk){
+      var r = computeDay(dk);
+      if (r[key] > 0) days.push({ date: dk, val: r[key] });
+    });
+
+    var detailTr = document.createElement("tr");
+    detailTr.className = "cat-detail";
+    detailTr.dataset.forKey = key;
+    var td = document.createElement("td");
+    td.colSpan = 3;
+    if (days.length === 0){
+      td.innerHTML = '<div class="cat-detail-empty">這個期間沒有相關天數</div>';
+    } else {
+      var html = '<div class="cat-detail-list">';
+      days.forEach(function(d){
+        var p = parseKey(d.date);
+        html += '<div class="cat-detail-item"><span>' + (p.m+1) + '/' + p.d + '</span><span>' + d.val.toFixed(1) + ' hr</span></div>';
+      });
+      html += '</div>';
+      td.innerHTML = html;
+    }
+    detailTr.appendChild(td);
+    rowEl.classList.add("open");
+    rowEl.parentNode.insertBefore(detailTr, rowEl.nextSibling);
+  }
+
+  function renderCalendar(){
+    var grid = document.getElementById("calGrid");
+    grid.innerHTML = "";
+    var dates = periodDates(curPeriod);
+    var first = parseKey(dates[0]);
+    var firstDow = new Date(first.y, first.m, first.d).getDay();
+    for (var i = 0; i < firstDow; i++){
+      var blank = document.createElement("div");
+      blank.className = "cell blank";
+      grid.appendChild(blank);
+    }
+    dates.forEach(function(dk){
+      var p = parseKey(dk);
+      var entry = STORE.entries[dk];
+      var isDisaster = !!STORE.disasters[dk];
+      var cell = document.createElement("div");
+      cell.className = "cell" + (dk === todayKey ? " today" : "") + (isDisaster ? " disaster-day" : "");
+      cell.dataset.key = dk;
+
+      var num = document.createElement("div");
+      num.className = "date-num";
+      var hol = STORE.holidays[dk];
+      num.textContent = hol ? String(p.d) : ((p.m+1) + "/" + p.d);
+      if (hol){
+        var htag = document.createElement("span");
+        htag.className = "hol-tag " + (hol.type === "特殊節日" ? "special" : "national");
+        htag.textContent = hol.name.length > 2 ? hol.name.slice(0,2) : hol.name;
+        htag.title = hol.name;
+        num.appendChild(htag);
+      }
+      cell.appendChild(num);
+
+      var labelEl;
+      if (entry && entry.leaveType){
+        var lv = document.createElement("div");
+        lv.className = "leave-label";
+        lv.textContent = entry.leaveType;
+        cell.appendChild(lv);
+        labelEl = lv;
+      } else {
+        var effShift = effectiveShiftType(dk);
+        var lab = document.createElement("div");
+        lab.className = "shift-label";
+        if (effShift && SHIFT_META[effShift]){
+          var meta = SHIFT_META[effShift];
+          lab.textContent = effShift;
+          if (effShift.length > 2) lab.style.fontSize = "9.5px";
+          lab.style.color = meta.fg; lab.style.background = meta.bg;
+          if (meta.border) lab.style.border = meta.border;
+        }
+        cell.appendChild(lab);
+        labelEl = lab;
+      }
+
+      if (isDisaster && labelEl){
+        var dmark = document.createElement("span");
+        dmark.className = "disaster-mark";
+        dmark.textContent = "停班";
+        labelEl.appendChild(dmark);
+      }
+
+      if (STORE.compRest[dk] && labelEl){
+        var cmark = document.createElement("span");
+        cmark.className = "comprest-mark";
+        cmark.textContent = "休加";
+        labelEl.appendChild(cmark);
+      }
+
+      if (entry && entry.otHours && !entry.leaveType){
+        var badge = document.createElement("div");
+        badge.className = "adj-badge";
+        badge.textContent = "+" + entry.otHours;
+        cell.appendChild(badge);
+      }
+
+      cell.addEventListener("click", function(){ openEditor(this.dataset.key); });
+      grid.appendChild(cell);
+    });
+    var totalCells = firstDow + dates.length;
+    var trailing = (7 - (totalCells % 7)) % 7;
+    for (var j = 0; j < trailing; j++){
+      var blank2 = document.createElement("div");
+      blank2.className = "cell blank";
+      grid.appendChild(blank2);
+    }
+  }
+
+  // ---------- day editor ----------
+  function computePreview(){
+    var backupEntry = STORE.entries[editingKey];
+    var hadDisaster = Object.prototype.hasOwnProperty.call(STORE.disasters, editingKey);
+    var backupDisaster = STORE.disasters[editingKey];
+    var hadCompRest = Object.prototype.hasOwnProperty.call(STORE.compRest, editingKey);
+    var backupCompRest = STORE.compRest[editingKey];
+
+    STORE.entries[editingKey] = {
+      shiftType: pendingType,
+      otHours: parseFloat(document.getElementById("otInput").value) || 0,
+      leaveType: pendingLeave
+    };
+    if (pendingDisaster) STORE.disasters[editingKey] = true; else delete STORE.disasters[editingKey];
+    if (pendingCompRest) STORE.compRest[editingKey] = true; else delete STORE.compRest[editingKey];
+
+    var r = computeDay(editingKey);
+
+    STORE.entries[editingKey] = backupEntry;
+    if (hadDisaster) STORE.disasters[editingKey] = backupDisaster; else delete STORE.disasters[editingKey];
+    if (hadCompRest) STORE.compRest[editingKey] = backupCompRest; else delete STORE.compRest[editingKey];
+
+    return r;
+  }
+
+  function renderPreview(){
+    var r = computePreview();
+    var box = document.getElementById("previewBox");
+    var lines = [];
+    CATEGORIES.concat([MANUAL_REPORT_CAT]).forEach(function(cat){
+      if (r[cat.key] > 0) lines.push('<div class="prow"><span>' + cat.label + '</span><span>' + r[cat.key].toFixed(1) + ' hr</span></div>');
+    });
+    box.innerHTML = '<div class="ptitle">本日試算</div>' + (lines.length ? lines.join("") : '<div class="prow"><span>（無加班相關時數）</span><span></span></div>');
+  }
+
+  function openEditor(key){
+    editingKey = key;
+    var entry = STORE.entries[key] || { shiftType:"", otHours:0, leaveType:"" };
+    pendingType = entry.shiftType || "";
+    pendingLeave = entry.leaveType || "";
+
+    var p = parseKey(key);
+    var d = new Date(p.y, p.m, p.d);
+    document.getElementById("sheetTitle").innerHTML = (p.m+1) + "月" + p.d + "日" + '<span class="sub">週' + WEEKDAY_NAMES[d.getDay()] + "</span>";
+
+    var hasAutoGroup = !!GROUP_CYCLES[STORE.group];
+    var shiftInfoEl = document.getElementById("shiftInfo");
+    var typeGrid = document.getElementById("typeGrid");
+
+    if (hasAutoGroup){
+      typeGrid.style.display = "none";
+      shiftInfoEl.style.display = "block";
+      var effShift = effectiveShiftType(editingKey);
+      shiftInfoEl.textContent = pendingType
+        ? ("目前班別：" + pendingType + "（手動設定，如需變更請用「匯入」更新資料）")
+        : ("目前班別：" + effShift + "（依「" + STORE.group + "」規律自動推算）");
+      typeGrid.innerHTML = "";
+    } else {
+      shiftInfoEl.style.display = "none";
+      typeGrid.style.display = "grid";
+      typeGrid.innerHTML = "";
+      SHIFT_TYPES.forEach(function(type){
+        var btn = document.createElement("button");
+        btn.className = "opt-btn" + (pendingType === type ? " selected" : "");
+        btn.textContent = type;
+        btn.addEventListener("click", function(){
+          pendingType = (pendingType === type) ? "" : type;
+          Array.prototype.forEach.call(typeGrid.querySelectorAll(".opt-btn"), function(b){
+            b.classList.toggle("selected", b === btn && pendingType === type);
+          });
+          updateHolInfo(); renderPreview();
+        });
+        typeGrid.appendChild(btn);
+      });
+      var clearTypeBtn = document.createElement("button");
+      clearTypeBtn.className = "opt-btn clear-btn";
+      clearTypeBtn.textContent = "清除班別";
+      clearTypeBtn.addEventListener("click", function(){
+        pendingType = "";
+        Array.prototype.forEach.call(typeGrid.querySelectorAll(".opt-btn"), function(b){ b.classList.remove("selected"); });
+        renderPreview();
+      });
+      typeGrid.appendChild(clearTypeBtn);
+    }
+
+    document.getElementById("otInput").value = entry.otHours || "";
+
+    var presetRow = document.getElementById("otPresetRow");
+    presetRow.innerHTML = "";
+    ["0","0.5","1","2","3","4"].forEach(function(v){
+      var b = document.createElement("button");
+      b.className = "preset-btn"; b.textContent = v;
+      b.addEventListener("click", function(){
+        document.getElementById("otInput").value = v === "0" ? "" : v;
+        renderPreview();
+      });
+      presetRow.appendChild(b);
+    });
+
+    var leaveGrid = document.getElementById("leaveGrid");
+    leaveGrid.innerHTML = "";
+    LEAVE_TYPES.forEach(function(lv){
+      var btn = document.createElement("button");
+      btn.className = "opt-btn" + (pendingLeave === lv ? " selected" : "");
+      btn.textContent = lv;
+      btn.addEventListener("click", function(){
+        pendingLeave = (pendingLeave === lv) ? "" : lv;
+        Array.prototype.forEach.call(leaveGrid.querySelectorAll(".opt-btn"), function(b){
+          b.classList.toggle("selected", b === btn && pendingLeave === lv);
+        });
+        renderPreview();
+      });
+      leaveGrid.appendChild(btn);
+    });
+
+    pendingDisaster = !!STORE.disasters[key];
+    pendingCompRest = !!STORE.compRest[key];
+    updateFlagBtns();
+
+    updateHolInfo();
+    renderPreview();
+    document.getElementById("overlay").classList.add("open");
+  }
+
+  function updateFlagBtns(){
+    document.getElementById("disasterBtn").classList.toggle("selected", pendingDisaster);
+    document.getElementById("compRestBtn").classList.toggle("selected", pendingCompRest);
+  }
+  document.getElementById("disasterBtn").addEventListener("click", function(){
+    pendingDisaster = !pendingDisaster;
+    updateFlagBtns();
+    if (pendingDisaster) STORE.disasters[editingKey] = true; else delete STORE.disasters[editingKey];
+    saveData();
+    renderPreview();
+    renderCalendar();
+    renderBreakdown();
+    renderHero();
+  });
+  document.getElementById("compRestBtn").addEventListener("click", function(){
+    pendingCompRest = !pendingCompRest;
+    updateFlagBtns();
+    if (pendingCompRest) STORE.compRest[editingKey] = true; else delete STORE.compRest[editingKey];
+    saveData();
+    renderPreview();
+    renderCalendar();
+    renderBreakdown();
+    renderHero();
+  });
+
+  function updateHolInfo(){
+    var hol = STORE.holidays[editingKey];
+    var box = document.getElementById("holInfo");
+    if (hol){
+      box.style.display = "block";
+      box.textContent = "假日資訊：" + hol.name + "（" + hol.type + (hol.cny ? "・除夕初一初二" : "") + "）— 可至右上「假日」管理";
+    } else {
+      box.style.display = "none";
+    }
+  }
+
+  document.getElementById("otInput").addEventListener("input", renderPreview);
+
+  function closeEditor(){ document.getElementById("overlay").classList.remove("open"); editingKey = null; }
+
+  function saveEditor(){
+    if (!editingKey) return;
+    var otVal = parseFloat(document.getElementById("otInput").value);
+    if (isNaN(otVal)) otVal = 0;
+    if (!pendingType && !pendingLeave && otVal === 0){
+      delete STORE.entries[editingKey];
+    } else {
+      STORE.entries[editingKey] = { shiftType: pendingType, otHours: otVal, leaveType: pendingLeave };
+    }
+    if (pendingDisaster) STORE.disasters[editingKey] = true; else delete STORE.disasters[editingKey];
+    if (pendingCompRest) STORE.compRest[editingKey] = true; else delete STORE.compRest[editingKey];
+
+    saveData();
+    closeEditor();
+    renderAll();
+  }
+
+  // ---------- holiday manager ----------
+  var holEditingKey = null;
+  var holPendingType = "特殊節日";
+
+  function renderHolList(){
+    var el = document.getElementById("holList");
+    el.innerHTML = "";
+    var keys = Object.keys(STORE.holidays).sort();
+    if (keys.length === 0){ el.innerHTML = '<div class="history-empty">尚無假日資料</div>'; return; }
+    keys.forEach(function(dk){
+      var h = STORE.holidays[dk];
+      var row = document.createElement("div");
+      row.className = "hol-row";
+      row.innerHTML = '<span>' + dk + ' ' + h.name + (h.cny ? ' 🧧' : '') + '<span class="htype ' + (h.type==="特殊節日"?"special":"national") + '">' + h.type + '</span></span>';
+      var btnWrap = document.createElement("span");
+      var editBtn = document.createElement("button");
+      editBtn.textContent = "編輯";
+      editBtn.style.color = "var(--ink-soft)";
+      editBtn.addEventListener("click", function(){ fillHolForm(dk, h); });
+      var delBtn = document.createElement("button");
+      delBtn.textContent = "刪除";
+      delBtn.style.marginLeft = "8px";
+      delBtn.addEventListener("click", function(){
+        delete STORE.holidays[dk];
+        saveData(); renderHolList(); renderAll();
+      });
+      btnWrap.appendChild(editBtn); btnWrap.appendChild(delBtn);
+      row.appendChild(btnWrap);
+      el.appendChild(row);
+    });
+  }
+
+  function fillHolForm(dk, h){
+    document.getElementById("holDateInput").value = dk;
+    document.getElementById("holNameInput").value = h ? h.name : "";
+    holPendingType = h ? h.type : "特殊節日";
+    document.getElementById("holCnyCheck").checked = h ? !!h.cny : false;
+    updateHolTypeBtns();
+  }
+  function updateHolTypeBtns(){
+    document.getElementById("holTypeSpecial").classList.toggle("selected", holPendingType === "特殊節日");
+    document.getElementById("holTypeNational").classList.toggle("selected", holPendingType === "國定假日");
+  }
+  document.getElementById("holTypeSpecial").addEventListener("click", function(){ holPendingType = "特殊節日"; updateHolTypeBtns(); });
+  document.getElementById("holTypeNational").addEventListener("click", function(){ holPendingType = "國定假日"; updateHolTypeBtns(); });
+
+  document.getElementById("holBtn").addEventListener("click", function(){
+    fillHolForm("", null);
+    renderHolList();
+    document.getElementById("holOverlay").classList.add("open");
+  });
+  document.getElementById("holCancelBtn").addEventListener("click", function(){
+    document.getElementById("holOverlay").classList.remove("open");
+  });
+  document.getElementById("holCloseXBtn").addEventListener("click", function(){
+    document.getElementById("holOverlay").classList.remove("open");
+  });
+  document.getElementById("holOverlay").addEventListener("click", function(e){
+    if (e.target === this) this.classList.remove("open");
+  });
+  document.getElementById("holSaveBtn").addEventListener("click", function(){
+    var dk = document.getElementById("holDateInput").value;
+    var name = document.getElementById("holNameInput").value.trim();
+    var cny = document.getElementById("holCnyCheck").checked;
+    if (!dk || !name){ showToast("請輸入日期與名稱"); return; }
+    STORE.holidays[dk] = { name: name, type: holPendingType, cny: cny };
+    saveData();
+    fillHolForm("", null);
+    renderHolList();
+    renderAll();
+    showToast("已儲存假日");
+  });
+
+  // ---------- export / import ----------
+  function buildExportBlob(){
+    return new Blob([JSON.stringify(STORE, null, 2)], {type:"application/json"});
+  }
+  function fallbackDownload(blob, filename){
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url; a.download = filename;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
+  }
+  async function doExport(){
+    var blob = buildExportBlob();
+    var filename = "輪班加班紀錄-備份.json";
+    try {
+      if (typeof window.claude !== "undefined" && window.claude && window.claude.use){
+        var downloads = await window.claude.use("downloads");
+        if (downloads){
+          await downloads.save({ filename: filename, data: blob });
+          showToast("已匯出備份");
+          return;
+        }
+      }
+    } catch(e){
+      if (e && e.code === "declined") return;
+    }
+    try { fallbackDownload(blob, filename); showToast("已下載備份"); }
+    catch(e){ showToast("匯出失敗"); }
+  }
+  function doImport(file){
+    var reader = new FileReader();
+    reader.onload = function(){
+      try {
+        var incoming = JSON.parse(reader.result);
+        if (typeof incoming !== "object" || incoming === null) throw new Error("bad");
+        if (incoming.entries) Object.keys(incoming.entries).forEach(function(k){
+          if (/^\d{4}-\d{2}-\d{2}$/.test(k)) STORE.entries[k] = incoming.entries[k];
+        });
+        if (incoming.holidays) Object.keys(incoming.holidays).forEach(function(k){
+          if (/^\d{4}-\d{2}-\d{2}$/.test(k)) STORE.holidays[k] = incoming.holidays[k];
+        });
+        if (incoming.disasters) Object.keys(incoming.disasters).forEach(function(k){ STORE.disasters[k] = true; });
+        if (incoming.compRest) Object.keys(incoming.compRest).forEach(function(k){ STORE.compRest[k] = true; });
+        saveData();
+        renderAll();
+        showToast("匯入完成");
+      } catch(e){ showToast("檔案格式錯誤，匯入失敗"); }
+    };
+    reader.readAsText(file);
+  }
+
+  // ---------- wire up ----------
+  function goPeriod(delta){
+    curPeriod = shiftPeriod(curPeriod, delta);
+    renderAll();
+    var grid = document.getElementById("calGrid");
+    grid.classList.remove("slide-next","slide-prev");
+    void grid.offsetWidth;
+    grid.classList.add(delta > 0 ? "slide-next" : "slide-prev");
+  }
+  document.getElementById("prevPeriod").addEventListener("click", function(){ goPeriod(-1); });
+  document.getElementById("todayBtn").addEventListener("click", function(){
+    var target = getCurrentPeriodKey();
+    if (target === curPeriod) return;
+    var delta = target > curPeriod ? 1 : -1;
+    curPeriod = target;
+    renderAll();
+    var grid = document.getElementById("calGrid");
+    grid.classList.remove("slide-next","slide-prev");
+    void grid.offsetWidth;
+    grid.classList.add(delta > 0 ? "slide-next" : "slide-prev");
+  });
+  document.getElementById("nextPeriod").addEventListener("click", function(){ goPeriod(1); });
+  (function(){
+    var grid = document.getElementById("calGrid");
+    var touchStartX = null, touchStartY = null;
+    grid.addEventListener("touchstart", function(e){
+      if (e.touches.length !== 1) return;
+      touchStartX = e.touches[0].clientX;
+      touchStartY = e.touches[0].clientY;
+    }, {passive:true});
+    grid.addEventListener("touchend", function(e){
+      if (touchStartX === null) return;
+      var dx = e.changedTouches[0].clientX - touchStartX;
+      var dy = e.changedTouches[0].clientY - touchStartY;
+      touchStartX = null; touchStartY = null;
+      if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy) * 1.5){
+        if (dx < 0) goPeriod(1); else goPeriod(-1);
+      }
+    }, {passive:true});
+  })();
+  document.getElementById("cancelBtn").addEventListener("click", closeEditor);
+  document.getElementById("closeXBtn").addEventListener("click", closeEditor);
+  document.getElementById("saveBtn").addEventListener("click", saveEditor);
+  document.getElementById("overlay").addEventListener("click", function(e){ if (e.target === this) closeEditor(); });
+  document.getElementById("exportBtn").addEventListener("click", doExport);
+  document.getElementById("importBtn").addEventListener("click", function(){ document.getElementById("importFile").click(); });
+  document.getElementById("importFile").addEventListener("change", function(e){
+    if (e.target.files && e.target.files[0]) doImport(e.target.files[0]);
+    e.target.value = "";
+  });
+  document.getElementById("resetBtn").addEventListener("click", function(){
+    if (confirm("確定要清空所有已儲存的資料嗎？這個動作無法復原。")){
+      try { localStorage.removeItem(V2_KEY); } catch(e){}
+      loadData();
+      renderAll();
+      showToast("已清空");
+    }
+  });
+
+  function renderGroupList(){
+    var el = document.getElementById("groupList");
+    el.innerHTML = "";
+    GROUP_LIST.forEach(function(g){
+      var row = document.createElement("div");
+      row.className = "hol-row";
+      row.style.cursor = "pointer";
+      var auto = GROUP_CYCLES[g] ? "（自動排班）" : "（手動輸入）";
+      row.innerHTML = '<span>' + g + ' <span style="color:var(--ink-faint);font-size:11px">' + auto + '</span></span>' +
+        (STORE.group === g ? '<span style="color:var(--accent);font-weight:700">已選擇</span>' : '');
+      row.addEventListener("click", function(){
+        STORE.group = g;
+        saveData();
+        document.getElementById("groupOverlay").classList.remove("open");
+        renderAll();
+      });
+      el.appendChild(row);
+    });
+  }
+  document.getElementById("groupBtn").addEventListener("click", function(){
+    renderGroupList();
+    document.getElementById("groupOverlay").classList.add("open");
+  });
+  document.getElementById("groupCloseXBtn").addEventListener("click", function(){
+    document.getElementById("groupOverlay").classList.remove("open");
+  });
+  document.getElementById("groupOverlay").addEventListener("click", function(e){
+    if (e.target === this) this.classList.remove("open");
+  });
+
+  try {
+    if (navigator.storage && navigator.storage.persist) { navigator.storage.persist(); }
+  } catch(e){}
+
+  loadData();
+  renderAll();
+  if (!STORE.group){
+    renderGroupList();
+    document.getElementById("groupOverlay").classList.add("open");
+  }
+})();
+</script>
+</body>
+</html>
