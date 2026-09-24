@@ -2,6 +2,7 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="UTF-8">
+<meta name="color-scheme" content="light only">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -35,32 +36,6 @@
     --mono: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, Consolas, monospace;
     --sans: -apple-system, BlinkMacSystemFont, "PingFang TC", "Noto Sans TC", "Microsoft JhengHei", "Segoe UI", sans-serif;
     color-scheme: light;
-  }
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --bg: #15171C;
-      --surface: #1D2026;
-      --surface-2: #262A32;
-      --ink: #EDEEF0;
-      --ink-soft: #9AA1AC;
-      --ink-faint: #6B7280;
-      --border: #30343C;
-      --accent: #E0A458;
-      --accent-soft: #382C1C;
-      --leave: #E08578;
-      --shift-day: #6E9BE0;
-      --shift-evening: #C98955;
-      --shift-night: #0E1015;
-      --shift-off: #E08578;
-      --shift-off-bg: #241C1B;
-      --holiday-special: #E0B85A;
-      --holiday-national: #E08578;
-      --disaster: #E08578;
-      --comprest: #6E9BE0;
-      --leave-bg: #2A2620;
-      --leave-fg: #B8AA92;
-      color-scheme: dark;
-    }
   }
   * { box-sizing: border-box; }
   html, body { height: 100%; margin: 0; }
@@ -152,10 +127,6 @@
   /* 月曆:仿「愛輪班」風格 */
   .cal-wrap { --cal-line: #9E9E9E; --cal-weekend: #FBE3F3; --cal-num: #3A3A3A; --cal-dim: #A5A5A5; --cal-box: #2B2B2B; --cal-red: #E8141E; --cal-small: #555;
     border-top: 1px solid var(--cal-line); border-left: 1px solid var(--cal-line); background: #fff; margin: 0 -14px; }
-  @media (prefers-color-scheme: dark) {
-    .cal-wrap { --cal-line: #3A3E46; --cal-weekend: #2E2129; --cal-num: #EDEEF0; --cal-dim: #5A606B; --cal-box: #8A909A; --cal-red: #FF5A5F; --cal-small: #9AA1AC; background: var(--surface);
-      --shift-day: #1F3BFF; --shift-evening: #C4570C; --shift-night: #000; }
-  }
   .weekday-row { display: grid; grid-template-columns: repeat(7, 1fr); background: #000; }
   .weekday-row div { text-align: center; font-size: clamp(15px, 4.6vw, 20px); font-weight: 600; color: #fff; padding: 4px 0; border-right: 1px solid #555; border-bottom: 1px solid var(--cal-line); }
   .weekday-row div:first-child, .weekday-row div:last-child { color: #FF5C8A; }
