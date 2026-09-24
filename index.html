@@ -53,6 +53,14 @@
   header.top h1 { font-size: 16px; font-weight: 600; margin: 0; letter-spacing: 0.2px; display: flex; align-items: center; gap: 6px; white-space: nowrap; }
   .hol-row.group-row { cursor: pointer; font-size: 17px; padding: 14px 14px; }
   .group-sub { color: var(--ink-faint); font-size: 13px; }
+  .help-btn { width: 24px; height: 24px; border-radius: 50%; border: 1.5px solid var(--ink-soft); background: none; color: var(--ink-soft); font-family: var(--sans); font-size: 14px; font-weight: 700; line-height: 1; padding: 0; cursor: pointer; flex-shrink: 0; }
+  .help-item { padding: 11px 0; border-bottom: 1px solid var(--border); }
+  .help-item.hi-sep { border-top: 1.5px solid var(--ink-faint); margin-top: 6px; }
+  .hi-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; font-size: 15px; }
+  .hi-hr { font-family: var(--mono); font-size: 13px; font-weight: 700; color: var(--accent); white-space: nowrap; }
+  .help-item p { margin: 4px 0 0; font-size: 13.5px; line-height: 1.55; color: var(--ink-soft); }
+  .help-item p strong { color: var(--ink); }
+  .help-note { margin: 12px 0 4px; padding: 10px 12px; background: var(--surface-2); border-radius: 10px; font-size: 13px; color: var(--ink-soft); }
   .group-tag { font-family: var(--sans); font-size: 12px; font-weight: 700; color: #fff; background: var(--shift-day); border: none; border-radius: 999px; padding: 2px 8px; cursor: pointer; line-height: 1.5; }
   .icon-btn {
     background: none; border: none; color: var(--ink-soft); font-size: 12px;
@@ -95,7 +103,8 @@
   .bd-right { display: flex; align-items: baseline; gap: 4px; }
   .bd-total { font-family: var(--mono); font-size: 26px; font-weight: 700; color: var(--accent); }
   .bd-unit { font-size: 13px; color: var(--ink-soft); font-weight: 500; margin-right: 6px; }
-  .day-panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 2px 16px 16px; margin: 14px 0 12px; }
+  /* 跟月曆同寬、接在月曆正下方,邊線同色 */
+  .day-panel { background: #fff; border: 1px solid #9E9E9E; border-top: none; border-radius: 0; padding: 4px 14px 14px; margin: 0 -14px 12px; }
 
   .day-panel .preview-box { margin-bottom: 0; }
   .cell.selected { box-shadow: inset 0 0 0 3px #1E6BFF; }
@@ -172,10 +181,9 @@
   .cell .shift-box.off .shift-label { color: var(--cal-red); background: none; }
   .cell .shift-box.leave .shift-label { background: var(--leave-bg); color: var(--leave-fg); font-size: clamp(12px, 4vw, 18px); font-weight: 600; }
   .cell .note-mark { position: absolute; top: 0; right: 0; width: 0; height: 0; border-top: 12px solid #FF9500; border-left: 12px solid transparent; z-index: 3; }
-  .cell .cell-mark { position: absolute; bottom: 1px; font-size: clamp(8px, 2.3vw, 10px); font-weight: 700; color: #fff; line-height: 1.3; padding: 0 2px; border-radius: 3px; z-index: 2; white-space: nowrap; }
-  .cell .disaster-mark { left: 1px; background: var(--disaster); }
-  .cell .comprest-mark { right: 1px; background: var(--comprest); }
-  .cell .comprest-mark.holiday-work { background: #7B3FC4; }
+  .cell .lunar.flag-tag { color: #fff; background: var(--comprest); font-weight: 700; border-radius: 3px; padding: 1px 3px; margin-bottom: 2px; }
+  .cell .lunar.flag-tag.holiday-work { background: #7B3FC4; }
+  .cell .lunar.flag-tag.disaster { background: var(--disaster); }
 
   .history { margin-top: 24px; }
   .history h3 { font-size: 12.5px; color: var(--ink-soft); font-weight: 600; margin: 0 0 8px; }
@@ -237,7 +245,7 @@
   .year-banner .yb-close { background: none; color: var(--ink-soft); font-size: 18px; padding: 0 4px; }
   .check-row { display: flex; align-items: center; gap: 8px; padding: 9px 0; font-size: 13px; }
   .check-row input { width: 18px; height: 18px; }
-  .hol-info { font-size: 12px; padding: 8px 10px; background: var(--surface-2); border-radius: 8px; color: var(--ink-soft); margin-top: 4px; }
+  .hol-info { white-space: pre-line; font-size: 12px; padding: 8px 10px; background: var(--surface-2); border-radius: 8px; color: var(--ink-soft); margin-top: 4px; }
   .preview-box { margin-top: 14px; padding: 10px 12px; background: var(--surface-2); border-radius: 10px; font-size: 11.5px; color: var(--ink-soft); }
   .preview-box .prow { display: flex; justify-content: space-between; font-family: var(--mono); }
   .preview-box .ptitle { font-family: var(--sans); font-size: 11px; color: var(--ink-faint); margin-bottom: 4px; }
@@ -267,7 +275,7 @@
 <div class="wrap">
 
   <header class="top">
-    <h1>加班計算器<button type="button" class="group-tag" id="groupTag" hidden></button></h1>
+    <h1><button type="button" class="help-btn" id="helpBtn" aria-label="計算說明">?</button>加班計算器<button type="button" class="group-tag" id="groupTag" hidden></button></h1>
     <div class="btn-row">
       <button class="icon-btn" id="holBtn">特殊日</button><button class="icon-btn" id="importBtn">匯入</button><button class="icon-btn" id="exportBtn">匯出</button>
     </div>
@@ -348,6 +356,36 @@
     </div>
     <div class="sheet-body">
       <div id="groupList"></div>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="helpOverlay">
+  <div class="sheet">
+    <div class="sheet-head">
+      <p class="sheet-title">加班時數怎麼算</p>
+      <button type="button" class="close-x" id="helpCloseXBtn" aria-label="關閉">×</button>
+    </div>
+    <div class="sheet-body">
+      <div class="help-item"><div class="hi-head"><b>交接班</b><span class="hi-hr">0.5 hr</span></div>
+        <p>輪班人員與上、下班人員的交接時數。常日班沒有；中21 班部分日子沒有。</p></div>
+      <div class="help-item"><div class="hi-head"><b>平日加班</b><span class="hi-hr">前 2 hr</span></div>
+        <p>當天加班時數的前 2 小時。</p></div>
+      <div class="help-item"><div class="hi-head"><b>超時加班</b><span class="hi-hr">超過 2 hr</span></div>
+        <p>當天加班超過 2 小時的部分。例：加班 3 hr = 平日 2 + 超時 1。</p></div>
+      <div class="help-item"><div class="hi-head"><b>休息日加班（制度）</b><span class="hi-hr">8 + 0.5 hr</span></div>
+        <p>人資指定的日子（一年約 13 天），在「特殊日」設定。</p></div>
+      <div class="help-item"><div class="hi-head"><b>國定加班</b><span class="hi-hr">8 hr</span></div>
+        <p>國定假日、特殊節日當天有上班。12 小時班也只算 8 hr。補假、小年夜等「放假日」不算。</p></div>
+      <div class="help-item"><div class="hi-head"><b>獎工時數</b><span class="hi-hr">8 hr</span></div>
+        <p>特殊節日（元旦、除夕、初一、初二、中秋）或天災停班上班，再多加 8 hr。兩者同一天只給一次。</p></div>
+      <div class="help-item"><div class="hi-head"><b>天災出勤加班</b><span class="hi-hr">8 hr</span></div>
+        <p>政府宣布停班那天有上班，另加獎工 8 hr。大夜班照時間切：前一天停班 0.25 hr、當天停班 7.75 hr。</p></div>
+      <div class="help-item"><div class="hi-head"><b>特休補休（除夕初一初二）</b><span class="hi-hr">8 hr</span></div>
+        <p>除夕、初一、初二請特休或例假，會給一天補休加班。</p></div>
+      <div class="help-item hi-sep"><div class="hi-head"><b>手寫另報</b><span class="hi-hr">0.5 hr</span></div>
+        <p>當天加班滿 4 hr 時，交接班的 0.5 hr 改列這裡（系統單日最多報 12 hr）。<strong>不算進合計。</strong></p></div>
+      <div class="help-note">請假的那天沒有國定加班、獎工時數、天災出勤加班。</div>
     </div>
   </div>
 </div>
@@ -526,23 +564,57 @@
         if (!STORE.compRest) STORE.compRest = {};
         if (!STORE.holidayWork) STORE.holidayWork = {};
         if (!STORE.group) STORE.group = "";
+        // 舊資料沒有分班別,整包歸到目前選的班別
+        if (!STORE.byGroup){
+          STORE.byGroup = {};
+          STORE.byGroup[STORE.group] = { entries: STORE.entries, compRest: STORE.compRest, holidayWork: STORE.holidayWork };
+        }
+        bindGroup(STORE.group);
         return;
       }
       var v1raw = localStorage.getItem(V1_KEY);
       if (v1raw){
         var v1 = JSON.parse(v1raw);
         STORE = { entries: migrateV1ToEntries(v1), holidays: JSON.parse(JSON.stringify(HOLIDAYS_DEFAULT)), disasters:{}, compRest:{}, holidayWork:{}, group:"" };
+        STORE.byGroup = { "": { entries: STORE.entries, compRest: STORE.compRest, holidayWork: STORE.holidayWork } };
         saveData();
         return;
       }
       STORE = { entries: migrateV1ToEntries(PRESET_V1), holidays: JSON.parse(JSON.stringify(HOLIDAYS_DEFAULT)), disasters:{}, compRest:{}, holidayWork:{}, group:"" };
+      STORE.byGroup = {};
+      bindGroup("");
       saveData();
     } catch(e){
-      STORE = { entries: migrateV1ToEntries(PRESET_V1), holidays: JSON.parse(JSON.stringify(HOLIDAYS_DEFAULT)), disasters:{}, compRest:{}, holidayWork:{}, group:"" };
+      STORE = { entries: migrateV1ToEntries(PRESET_V1), holidays: JSON.parse(JSON.stringify(HOLIDAYS_DEFAULT)), disasters:{}, compRest:{}, holidayWork:{}, group:"", byGroup:{} };
+      bindGroup("");
     }
   }
+  // 每個班別各自一份:每日紀錄、休息日加班、假日出勤。假日表與天災停班是共用的
+  function bindGroup(g){
+    if (!STORE.byGroup[g]) STORE.byGroup[g] = { entries:{}, compRest:{}, holidayWork:{} };
+    var b = STORE.byGroup[g];
+    if (!b.entries) b.entries = {};
+    if (!b.compRest) b.compRest = {};
+    if (!b.holidayWork) b.holidayWork = {};
+    STORE.group = g;
+    STORE.entries = b.entries;
+    STORE.compRest = b.compRest;
+    STORE.holidayWork = b.holidayWork;
+  }
+  function switchGroup(g){
+    // 還沒選過班別時輸入的資料,第一次選班別就歸給那個班別
+    if (STORE.group === "" && !STORE.byGroup[g]){
+      STORE.byGroup[g] = STORE.byGroup[""];
+      delete STORE.byGroup[""];
+    }
+    bindGroup(g);
+  }
   function saveData(){
-    try { localStorage.setItem(V2_KEY, JSON.stringify(STORE)); } catch(e){}
+    var out = {};
+    Object.keys(STORE).forEach(function(k){
+      if (k !== "entries" && k !== "compRest" && k !== "holidayWork") out[k] = STORE[k];
+    });
+    try { localStorage.setItem(V2_KEY, JSON.stringify(out)); } catch(e){}
   }
 
   // ---------- date / period helpers ----------
@@ -670,7 +742,10 @@
         result.statHoliday += 8;
         if (hol.type === "特殊節日") result.bonus += 8;
       }
-      result.disasterOT += disasterOvertimeHoursForShift(shift, dateKey, STORE.disasters, 8);
+      var disasterHrs = disasterOvertimeHoursForShift(shift, dateKey, STORE.disasters, 8);
+      result.disasterOT += disasterHrs;
+      // 上班時段碰到停班(含大夜前一天停班)另加獎工 8hr;跟特殊節日同一天只給一次
+      if (disasterHrs > 0 && result.bonus === 0) result.bonus += 8;
     }
 
     if (leave === "特休" || leave === "例假"){
@@ -737,9 +812,14 @@
     renderCalendar();
   }
 
+  // 時數顯示一位小數,遇到 0.25 這類才顯示兩位
+  function fmtHr(v){
+    var r = Math.round(v * 100) / 100;
+    return Math.round(r * 10) === r * 10 ? r.toFixed(1) : r.toFixed(2);
+  }
   function renderHero(){
     var t = periodTotals(curPeriod);
-    document.getElementById("heroOT").textContent = t.otTotalRaw.toFixed(1);
+    document.getElementById("heroOT").textContent = fmtHr(t.otTotalRaw);
     document.getElementById("heroWeighted").textContent = t.otTotalWeighted.toFixed(2);
   }
 
@@ -752,7 +832,7 @@
       var weighted = raw * cat.rate;
       var tr = document.createElement("tr");
       tr.className = "cat-row" + (raw === 0 ? " zero" : "");
-      tr.innerHTML = "<td>" + cat.label + "</td><td>" + raw.toFixed(1) + "</td><td class=\"col-w\">" + weighted.toFixed(2) + "</td>";
+      tr.innerHTML = "<td>" + cat.label + "</td><td>" + fmtHr(raw) + "</td><td class=\"col-w\">" + weighted.toFixed(2) + "</td>";
       tr.addEventListener("click", function(){ toggleCatDetail(cat.key, tr); });
       tbody.appendChild(tr);
     });
@@ -760,7 +840,7 @@
     var mr = t.manualReport || 0;
     var mrTr = document.createElement("tr");
     mrTr.className = "manual-report cat-row" + (mr === 0 ? " zero" : "");
-    mrTr.innerHTML = "<td><b>" + MANUAL_REPORT_CAT.label + "</b></td><td><b>" + mr.toFixed(1) + "</b></td><td class=\"col-w\"><b>" + (mr*MANUAL_REPORT_CAT.rate).toFixed(2) + "</b></td>";
+    mrTr.innerHTML = "<td><b>" + MANUAL_REPORT_CAT.label + "</b></td><td><b>" + fmtHr(mr) + "</b></td><td class=\"col-w\"><b>" + (mr*MANUAL_REPORT_CAT.rate).toFixed(2) + "</b></td>";
     mrTr.addEventListener("click", function(){ toggleCatDetail("manualReport", mrTr); });
     tbody.appendChild(mrTr);
   }
@@ -806,7 +886,7 @@
       var html = '<div class="cat-detail-list">';
       days.forEach(function(d){
         var p = parseKey(d.date);
-        html += '<div class="cat-detail-item"><span>' + (p.m+1) + '/' + p.d + '</span><span>' + d.val.toFixed(1) + ' hr</span></div>';
+        html += '<div class="cat-detail-item"><span>' + (p.m+1) + '/' + p.d + '</span><span>' + fmtHr(d.val) + ' hr</span></div>';
       });
       html += '</div>';
       td.innerHTML = html;
@@ -888,6 +968,16 @@
       cell.dataset.key = dk;
       var hol = STORE.holidays[dk];
       var top = buildCellTop(p, hol);
+      var flagOn = !!flagMap()[dk];
+      // 停班/休加/出勤放在左上小字的位置,跟農曆、節日同一排;同一天只放得下一個,停班優先
+      var lun = top.querySelector(".lunar");
+      if (isDisaster){
+        lun.className = "lunar flag-tag disaster";
+        lun.textContent = "停班";
+      } else if (flagOn){
+        lun.className = "lunar flag-tag" + (isWeekdayGroup() ? " holiday-work" : "");
+        lun.textContent = isWeekdayGroup() ? "出勤" : "休加";
+      }
       cell.appendChild(top);
 
       if (entry && entry.otHours && !entry.leaveType){
@@ -920,25 +1010,12 @@
         }
       }
       var hasNote = !!(entry && entry.note);
-      var flagOn = !!flagMap()[dk];
-      if (!box && (isDisaster || flagOn || hasNote)){
+      if (!box && hasNote){
         box = document.createElement("div");
         box.className = "shift-box";
         box.style.borderColor = "transparent";
       }
       if (box){
-        if (isDisaster){
-          var dmark = document.createElement("span");
-          dmark.className = "cell-mark disaster-mark";
-          dmark.textContent = "停班";
-          box.appendChild(dmark);
-        }
-        if (flagOn){
-          var cmark = document.createElement("span");
-          cmark.className = "cell-mark comprest-mark" + (isWeekdayGroup() ? " holiday-work" : "");
-          cmark.textContent = isWeekdayGroup() ? "出勤" : "休加";
-          box.appendChild(cmark);
-        }
         if (hasNote){
           var nmark = document.createElement("span");
           nmark.className = "note-mark";
@@ -977,7 +1054,7 @@
     var box = document.getElementById("previewBox");
     var lines = [];
     CATEGORIES.concat([MANUAL_REPORT_CAT]).forEach(function(cat){
-      if (r[cat.key] > 0) lines.push('<div class="prow"><span>' + cat.label + '</span><span>' + r[cat.key].toFixed(1) + ' hr</span></div>');
+      if (r[cat.key] > 0) lines.push('<div class="prow"><span>' + cat.label + '</span><span>' + fmtHr(r[cat.key]) + ' hr</span></div>');
     });
     box.innerHTML = '<div class="ptitle">本日試算</div>' + (lines.length ? lines.join("") : '<div class="prow"><span>（無加班相關時數）</span><span></span></div>');
   }
@@ -1052,18 +1129,31 @@
   function updateHolInfo(){
     var hol = STORE.holidays[editingKey];
     var box = document.getElementById("holInfo");
+    var rotation = !isWeekdayGroup();
+    // 當天有上班才寫加幾小時;休假或請假只寫名稱
+    var shift = pendingType || derivedShiftType(editingKey);
+    var worked = !pendingLeave && ["白班","小夜","大夜","08~20","12~24","常日"].indexOf(shift) >= 0;
+    var lines = [];
+    var bonusShown = false;
     if (hol){
-      box.style.display = "block";
-      box.textContent = "假日資訊：" + hol.name + "（" + hol.type + (hol.cny ? "・除夕初一初二" : "") + "）— 可至右上「特殊日」管理";
-    } else {
-      box.style.display = "none";
+      if (rotation && worked && hol.type === "特殊節日"){ lines.push(hol.name + "，加8獎8"); bonusShown = true; }
+      else if (rotation && worked && hol.type === "國定假日") lines.push(hol.name + "，加8");
+      else lines.push("假日資訊：" + hol.name + "（" + hol.type + (hol.cny ? "・除夕初一初二" : "") + "）");
     }
+    var dHrs = worked ? disasterOvertimeHoursForShift(shift, editingKey, STORE.disasters, 8) : 0;
+    var dLabel = STORE.disasters[editingKey] ? "天災停班" : "前一天天災停班";
+    if (dHrs > 0) lines.push(dLabel + "，加" + dHrs + (bonusShown ? "（獎工已含）" : "獎8"));
+    else if (STORE.disasters[editingKey]) lines.push("天災停班");
+    if (rotation && STORE.compRest[editingKey]) lines.push(worked ? "休息日加班，" + (derivedNoHandover(editingKey) ? "8" : "8.5") : "休息日加班");
+    box.style.display = lines.length ? "block" : "none";
+    box.textContent = lines.join("\n");
   }
 
   // 下方面板直接編輯,每次變更立即存檔
   document.getElementById("otInput").addEventListener("change", saveEditor);
   document.getElementById("leaveSelect").addEventListener("change", function(){
     pendingLeave = this.value;
+    updateHolInfo();
     saveEditor();
   });
   document.getElementById("noteInput").addEventListener("input", saveEditor);
@@ -1569,7 +1659,7 @@
       row.innerHTML = '<span>' + g + ' <span class="group-sub">' + auto + '</span></span>' +
         (STORE.group === g ? '<span style="color:var(--accent);font-weight:700">已選擇</span>' : '');
       row.addEventListener("click", function(){
-        STORE.group = g;
+        switchGroup(g);
         saveData();
         document.getElementById("groupOverlay").classList.remove("open");
         renderAll();
@@ -1577,6 +1667,15 @@
       el.appendChild(row);
     });
   }
+  document.getElementById("helpBtn").addEventListener("click", function(){
+    document.getElementById("helpOverlay").classList.add("open");
+  });
+  document.getElementById("helpCloseXBtn").addEventListener("click", function(){
+    document.getElementById("helpOverlay").classList.remove("open");
+  });
+  document.getElementById("helpOverlay").addEventListener("click", function(e){
+    if (e.target === this) this.classList.remove("open");
+  });
   document.getElementById("groupTag").addEventListener("click", function(){
     renderGroupList();
     document.getElementById("groupOverlay").classList.add("open");
