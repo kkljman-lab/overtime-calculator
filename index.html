@@ -51,6 +51,8 @@
 
   header.top { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 14px; gap: 6px; }
   header.top h1 { font-size: 16px; font-weight: 600; margin: 0; letter-spacing: 0.2px; display: flex; align-items: center; gap: 6px; white-space: nowrap; }
+  .hol-row.group-row { cursor: pointer; font-size: 17px; padding: 14px 14px; }
+  .group-sub { color: var(--ink-faint); font-size: 13px; }
   .group-tag { font-family: var(--sans); font-size: 12px; font-weight: 700; color: #fff; background: var(--shift-day); border: none; border-radius: 999px; padding: 2px 8px; cursor: pointer; line-height: 1.5; }
   .icon-btn {
     background: none; border: none; color: var(--ink-soft); font-size: 12px;
@@ -89,6 +91,14 @@
   .bd-chev { color: var(--ink-faint); font-size: 13px; transition: transform 0.2s; }
   .breakdown.collapsed .bd-chev { transform: rotate(-90deg); }
   .breakdown.collapsed table { display: none; }
+  .bd-label { font-size: 15px; }
+  .bd-right { display: flex; align-items: baseline; gap: 4px; }
+  .bd-total { font-family: var(--mono); font-size: 26px; font-weight: 700; color: var(--accent); }
+  .bd-unit { font-size: 13px; color: var(--ink-soft); font-weight: 500; margin-right: 6px; }
+  .day-panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 2px 16px 16px; margin: 14px 0 12px; }
+
+  .day-panel .preview-box { margin-bottom: 0; }
+  .cell.selected { box-shadow: inset 0 0 0 3px #1E6BFF; }
   .breakdown table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
   .breakdown th { text-align: right; font-weight: 500; color: var(--ink-faint); font-size: 10.5px; padding: 8px 0 4px; }
   .breakdown th:first-child { text-align: left; }
@@ -208,6 +218,23 @@
   .note-input { font-family: var(--sans); font-size: 16px; }
   .sheet-title .wd { font-weight: 600; margin-left: 8px; }
   .preset-btn { font-family: var(--mono); font-size: 11.5px; padding: 5px 9px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface-2); color: var(--ink-soft); cursor: pointer; }
+  .gov-btn { width: 100%; margin-bottom: 12px; padding: 10px 0; border-radius: 10px; border: 1.5px dashed var(--accent); background: var(--accent-soft); color: var(--accent); font-family: var(--sans); font-size: 14px; font-weight: 700; cursor: pointer; }
+  .gov-btn[hidden] { display: none; }
+  .gov-list { margin-top: 12px; }
+  .gov-row { display: flex; align-items: center; gap: 10px; padding: 10px 4px; border-bottom: 1px solid var(--border); font-size: 14px; }
+  .gov-row input { width: 20px; height: 20px; flex-shrink: 0; }
+  .gov-row .gd { font-family: var(--mono); color: var(--ink-soft); width: 88px; flex-shrink: 0; }
+  .gov-row .gn { flex: 1; }
+  .gov-row .gt { font-size: 11px; padding: 1px 6px; border-radius: 999px; color: #fff; margin-left: 4px; }
+  .gov-row .gt.special { background: var(--holiday-special); }
+  .gov-row .gt.national { background: var(--holiday-national); }
+  .gov-row .gnote { display: block; font-size: 11.5px; color: var(--ink-faint); }
+  .gov-msg { font-size: 13px; color: var(--ink-soft); padding: 14px 4px; }
+  .year-banner { display: flex; align-items: center; gap: 8px; background: var(--accent-soft); border: 1px solid var(--accent); color: var(--ink); border-radius: 10px; padding: 8px 10px; margin-bottom: 10px; font-size: 13.5px; }
+  .year-banner[hidden] { display: none; }
+  .year-banner span { flex: 1; }
+  .year-banner button { border: none; background: var(--accent); color: #fff; font-family: var(--sans); font-weight: 700; font-size: 13px; border-radius: 8px; padding: 5px 12px; cursor: pointer; }
+  .year-banner .yb-close { background: none; color: var(--ink-soft); font-size: 18px; padding: 0 4px; }
   .check-row { display: flex; align-items: center; gap: 8px; padding: 9px 0; font-size: 13px; }
   .check-row input { width: 18px; height: 18px; }
   .hol-info { font-size: 12px; padding: 8px 10px; background: var(--surface-2); border-radius: 8px; color: var(--ink-soft); margin-top: 4px; }
@@ -223,7 +250,13 @@
   .hol-row .htype { font-size: 10px; padding: 2px 6px; border-radius: 999px; color: #fff; margin-left: 6px; }
   .hol-row .htype.special { background: var(--holiday-special); }
   .hol-row .htype.national { background: var(--holiday-national); }
+  .hol-row .htype.dayoff, .gov-row .gt.dayoff { background: #8A8F98; }
+  .hol-type-hint { font-size: 11.5px; color: var(--ink-faint); line-height: 1.5; }
   .hol-row button { background: none; border: none; color: var(--leave); font-size: 12px; cursor: pointer; }
+  .seg { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; background: var(--surface-2); padding: 4px; border-radius: 10px; margin-bottom: 12px; }
+  .seg button { border: none; background: none; padding: 8px 0; border-radius: 7px; font-family: var(--sans); font-size: 13.5px; font-weight: 600; color: var(--ink-soft); cursor: pointer; }
+  .seg button.on { background: var(--surface); color: var(--ink); box-shadow: 0 1px 3px rgba(0,0,0,0.12); }
+  .hol-add-form[hidden] { display: none; }
   .hol-add-form { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); }
 
   .toast { position: fixed; bottom: calc(24px + env(safe-area-inset-bottom, 0px)); left: 50%; transform: translateX(-50%) translateY(10px); background: var(--ink); color: var(--bg); padding: 9px 16px; border-radius: 999px; font-size: 12.5px; opacity: 0; pointer-events: none; transition: opacity 0.2s, transform 0.2s; z-index: 80; white-space: nowrap; }
@@ -236,9 +269,15 @@
   <header class="top">
     <h1>加班計算器<button type="button" class="group-tag" id="groupTag" hidden></button></h1>
     <div class="btn-row">
-      <button class="icon-btn" id="groupBtn">班別群組</button><button class="icon-btn" id="holBtn">假日</button><button class="icon-btn" id="importBtn">匯入</button><button class="icon-btn" id="exportBtn">匯出</button>
+      <button class="icon-btn" id="holBtn">特殊日</button><button class="icon-btn" id="importBtn">匯入</button><button class="icon-btn" id="exportBtn">匯出</button>
     </div>
   </header>
+
+  <div class="year-banner" id="yearBanner" hidden>
+    <span id="yearBannerText"></span>
+    <button type="button" id="yearBannerBtn">匯入</button>
+    <button type="button" class="yb-close" id="yearBannerClose" aria-label="關閉">×</button>
+  </div>
 
   <div class="period-nav">
     <button id="prevPeriod" aria-label="上期">‹</button>
@@ -255,45 +294,7 @@
   <div class="grid" id="calGrid"></div>
   </div>
 
-  <section class="hero" style="margin-top:14px">
-    <div class="hero-top">
-      <div>
-        <p class="hero-label">本期延長工時合計</p>
-        <div class="hero-number" id="heroOT">0.0<span class="unit">小時</span></div>
-      </div>
-      <div class="hero-side">
-        加權後<span class="val" id="heroWeighted">0.0</span>
-      </div>
-    </div>
-    <div class="trend" id="trendChart"></div>
-  </section>
-
-  <div class="breakdown collapsed" id="breakdownCard">
-    <button type="button" class="bd-toggle" id="breakdownToggle" aria-expanded="false">
-      <span>分類明細</span><span class="bd-chev">▾</span>
-    </button>
-    <table>
-      <thead><tr><th>類別</th><th>小時</th><th class="col-w">加權後</th></tr></thead>
-      <tbody id="breakdownBody"></tbody>
-    </table>
-  </div>
-
-  <footer class="note">
-    資料儲存在這個瀏覽器裡，清除瀏覽器資料會遺失，建議定期按「匯出」備份。<br>
-    <button id="resetBtn">清空所有資料</button>
-  </footer>
-</div>
-
-<input type="file" id="importFile" accept=".csv,text/csv,.json,application/json" style="display:none">
-
-<div class="overlay" id="overlay">
-  <div class="sheet">
-    <div class="sheet-head">
-      <p class="sheet-title" id="sheetTitle">9月22日<span class="sub">週二</span></p>
-      <button type="button" class="close-x" id="closeXBtn" aria-label="關閉">×</button>
-    </div>
-
-    <div class="sheet-body">
+  <section class="day-panel" id="dayPanel">
       <div id="shiftField">
         <p class="field-label">班別</p>
         <div class="btn-grid" id="typeGrid"></div>
@@ -313,34 +314,57 @@
       <p class="field-label">備註</p>
       <input type="text" class="form-input note-input" id="noteInput" maxlength="100" placeholder="選填">
 
-      <p class="field-label">特殊標記</p>
-      <div class="btn-grid" style="grid-template-columns:1fr 1fr" id="flagGrid">
-        <button type="button" class="opt-btn" id="disasterBtn">天然災害停班</button>
-        <button type="button" class="opt-btn" id="compRestBtn">休息日加班</button>
-      </div>
-
       <div class="hol-info" id="holInfo" style="display:none"></div>
 
       <div class="preview-box" id="previewBox"></div>
-    </div>
+  </section>
 
-    <div class="sheet-actions">
-      <button class="btn-cancel" id="cancelBtn">取消</button>
-      <button class="btn-save" id="saveBtn">儲存</button>
-    </div>
+  <div class="breakdown collapsed" id="breakdownCard">
+    <button type="button" class="bd-toggle" id="breakdownToggle" aria-expanded="false">
+      <span class="bd-label">本期延長工時合計</span>
+      <span class="bd-right"><span class="bd-total" id="heroOT">0.0</span><span class="bd-unit">小時</span><span class="bd-chev">▾</span></span>
+    </button>
+    <span id="heroWeighted" hidden></span>
+    <table>
+      <thead><tr><th>類別</th><th>小時</th><th class="col-w">加權後</th></tr></thead>
+      <tbody id="breakdownBody"></tbody>
+    </table>
   </div>
+
+  <footer class="note">
+    資料儲存在這個瀏覽器裡，清除瀏覽器資料會遺失，建議定期按「匯出」備份。<br>
+    <button id="resetBtn">清空所有資料</button>
+  </footer>
 </div>
+
+<input type="file" id="importFile" accept=".csv,text/csv,.json,application/json" style="display:none">
+
 
 <div class="overlay" id="groupOverlay">
   <div class="sheet">
     <div class="sheet-head">
-      <p class="sheet-title">請選擇你的班別群組<span class="sub">之後可以在右上角「班別群組」重新選擇</span></p>
+      <p class="sheet-title">請選擇你的班別群組<span class="sub">之後點左上角的班別標籤可以重新選擇</span></p>
       <button type="button" class="close-x" id="groupCloseXBtn" aria-label="關閉">×</button>
     </div>
     <div class="sheet-body">
       <div id="groupList"></div>
-      <p class="field-label" style="margin-top:18px">說明</p>
-      <div class="hol-info">中16A／B／C／D班採 8 天循環（白班白班小夜小夜小休大夜大夜大休），中21AD／BC班採 16 天循環（含 08~20、12~24 兩種 12 小時班），常日班為週一到週五 08:00–17:00、週末與國定假日放假。選了之後班別會自動排好。如果都不是，選「其他／手動輸入」，自己每天手動點選班別就可以了。</div>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="govOverlay">
+  <div class="sheet">
+    <div class="sheet-head">
+      <p class="sheet-title">從政府行事曆匯入<span class="sub">資料來源：人事行政總處辦公日曆表（社群整理版）</span></p>
+      <button type="button" class="close-x" id="govCloseXBtn" aria-label="關閉">×</button>
+    </div>
+    <div class="sheet-body">
+      <select class="form-input form-select" id="govYear"></select>
+      <div id="govList" class="gov-list"></div>
+    </div>
+    <div class="sheet-actions">
+      <button class="btn-cancel" id="govCancelBtn">關閉</button>
+      <button class="btn-save" id="govAddBtn">加入勾選的假日</button>
     </div>
   </div>
 </div>
@@ -348,20 +372,32 @@
 <div class="overlay" id="holOverlay">
   <div class="sheet">
     <div class="sheet-head">
-      <p class="sheet-title">假日行事曆管理</p>
+      <p class="sheet-title">特殊日管理</p>
       <button type="button" class="close-x" id="holCloseXBtn" aria-label="關閉">×</button>
     </div>
     <div class="sheet-body">
+      <div class="seg" id="spTabs">
+        <button type="button" data-tab="flag" id="spFlagTab">休息日加班</button>
+        <button type="button" data-tab="disaster">天災停班</button>
+        <button type="button" data-tab="holiday">國定假日</button>
+      </div>
+      <button type="button" class="gov-btn" id="govOpenBtn">從政府行事曆匯入</button>
       <div id="holList"></div>
-      <div class="hol-add-form">
+      <div class="hol-add-form" id="holForm">
         <p class="field-label" style="margin-top:0">新增／編輯假日</p>
         <input type="date" class="form-input" id="holDateInput">
         <input type="text" class="form-input" id="holNameInput" placeholder="假日名稱，例如：中秋節">
-        <div class="btn-grid" style="grid-template-columns:1fr 1fr">
+        <div class="btn-grid" style="grid-template-columns:1fr 1fr 1fr">
           <button class="opt-btn" id="holTypeSpecial">特殊節日</button>
           <button class="opt-btn" id="holTypeNational">國定假日</button>
+          <button class="opt-btn" id="holTypeDayoff">放假日</button>
         </div>
+        <div class="hol-type-hint">放假日：補假、小年夜等。日期顯示紅字、常日班放假，輪班不算國定加班。</div>
         <div class="check-row"><input type="checkbox" id="holCnyCheck"><label for="holCnyCheck">屬於除夕／初一／初二（特休補休適用）</label></div>
+      </div>
+      <div class="hol-add-form" id="dateForm" hidden>
+        <p class="field-label" style="margin-top:0" id="dateFormLabel">新增日期</p>
+        <input type="date" class="form-input" id="spDateInput">
       </div>
     </div>
     <div class="sheet-actions">
@@ -392,6 +428,7 @@
     "08~20": { fg:"#3A3000", bg:"#E8C500" },
     "12~24": { fg:"#fff", bg:"#2F6B3F" },
     "常日": { fg:"#fff", bg:"var(--shift-day)" },
+    "補假": { fg:"var(--shift-off)", bg:"var(--shift-off-bg)", border:"2px solid var(--shift-off)" },
     "休假": { fg:"var(--shift-off)", bg:"var(--shift-off-bg)", border:"2px solid var(--shift-off)" },
     "大休": { fg:"var(--shift-off)", bg:"var(--shift-off-bg)", border:"2px solid var(--shift-off)" },
     "小休": { fg:"var(--shift-off)", bg:"var(--shift-off-bg)", border:"1.5px dashed var(--shift-off)" }
@@ -422,7 +459,17 @@
     "2026-05-01": {name:"勞動節",   type:"國定假日", cny:false},
     "2026-06-19": {name:"端午節",   type:"國定假日", cny:false},
     "2026-09-25": {name:"中秋節",   type:"特殊節日", cny:false},
-    "2026-10-10": {name:"國慶日",   type:"國定假日", cny:false}
+    "2026-10-10": {name:"國慶日",   type:"國定假日", cny:false},
+    "2026-02-15": {name:"小年夜",   type:"放假日", cny:false},
+    "2026-02-20": {name:"補假",     type:"放假日", cny:false},
+    "2026-02-27": {name:"補假",     type:"放假日", cny:false},
+    "2026-04-03": {name:"補假",     type:"放假日", cny:false},
+    "2026-04-06": {name:"補假",     type:"放假日", cny:false},
+    "2026-09-28": {name:"教師節",   type:"放假日", cny:false},
+    "2026-10-09": {name:"補假",     type:"放假日", cny:false},
+    "2026-10-25": {name:"光復節",   type:"放假日", cny:false},
+    "2026-10-26": {name:"補假",     type:"放假日", cny:false},
+    "2026-12-25": {name:"行憲紀念日", type:"放假日", cny:false}
   };
 
   var PRESET_V1 = {};
@@ -457,7 +504,6 @@
   var curPeriod = getCurrentPeriodKey();
   var editingKey = null;
   var pendingType = "", pendingLeave = "";
-  var pendingDisaster = false, pendingCompRest = false;
 
   // ---------- persistence ----------
   function migrateV1ToEntries(v1){
@@ -527,7 +573,8 @@
       var wp = parseKey(dateKey);
       var dow = new Date(wp.y, wp.m, wp.d).getDay();
       var off = dow === 0 || dow === 6 || !!STORE.holidays[dateKey];
-      return { shift: off && !STORE.holidayWork[dateKey] ? "休假" : "常日", noHandover: true };
+      var offLabel = STORE.holidays[dateKey] && STORE.holidays[dateKey].name === "補假" ? "補假" : "休假";
+      return { shift: off && !STORE.holidayWork[dateKey] ? offLabel : "常日", noHandover: true };
     }
     var a = parseKey(gc.anchor);
     var anchorDate = new Date(a.y, a.m, a.d);
@@ -619,7 +666,7 @@
       result.otOver += Math.max(0, ot - 2);
 
       var hol = STORE.holidays[dateKey];
-      if (hol){
+      if (hol && hol.type !== "放假日"){
         result.statHoliday += 8;
         if (hol.type === "特殊節日") result.bonus += 8;
       }
@@ -670,12 +717,18 @@
   // ---------- render ----------
   function renderGroupTag(){
     var tag = document.getElementById("groupTag");
-    if (!STORE.group){ tag.hidden = true; return; }
     tag.hidden = false;
-    tag.textContent = GROUP_CYCLES[STORE.group] ? STORE.group : "手動輸入";
+    tag.textContent = !STORE.group ? "選擇班別" : (GROUP_CYCLES[STORE.group] ? STORE.group : "手動輸入");
+  }
+  function ensureSelectedDay(){
+    var dates = periodDates(curPeriod);
+    if (editingKey && dates.indexOf(editingKey) >= 0) return;
+    editingKey = dates.indexOf(todayKey) >= 0 ? todayKey : dates[0];
   }
   function renderAll(){
     renderGroupTag();
+    ensureSelectedDay();
+    openEditor(editingKey);
     var lbl = periodLabel(curPeriod);
     document.getElementById("periodLabel").textContent = lbl.main;
     document.getElementById("periodSub").textContent = lbl.sub;
@@ -686,33 +739,8 @@
 
   function renderHero(){
     var t = periodTotals(curPeriod);
-    document.getElementById("heroOT").innerHTML = t.otTotalRaw.toFixed(1) + '<span class="unit">小時</span>';
+    document.getElementById("heroOT").textContent = t.otTotalRaw.toFixed(1);
     document.getElementById("heroWeighted").textContent = t.otTotalWeighted.toFixed(2);
-    renderTrend();
-  }
-
-  function renderTrend(){
-    var el = document.getElementById("trendChart");
-    el.innerHTML = "";
-    var periods = [];
-    var p = curPeriod;
-    for (var i = 5; i >= 0; i--){ periods.push(shiftPeriod(curPeriod, -i)); }
-    var vals = periods.map(function(pk){ return periodTotals(pk).otTotalRaw; });
-    var max = Math.max.apply(null, vals.concat([1]));
-    periods.forEach(function(pk, i){
-      var col = document.createElement("div");
-      col.className = "bar-col";
-      var bar = document.createElement("div");
-      bar.className = "bar" + (pk === curPeriod ? " current" : "");
-      var h = Math.max(3, Math.round((vals[i]/max) * 30));
-      bar.style.height = h + "px";
-      var label = document.createElement("div");
-      label.className = "bar-label";
-      var mm = parseInt(pk.split("-")[1],10);
-      label.textContent = mm + "月";
-      col.appendChild(bar); col.appendChild(label);
-      el.appendChild(col);
-    });
   }
 
   function renderBreakdown(){
@@ -728,10 +756,6 @@
       tr.addEventListener("click", function(){ toggleCatDetail(cat.key, tr); });
       tbody.appendChild(tr);
     });
-    var totalTr = document.createElement("tr");
-    totalTr.className = "total";
-    totalTr.innerHTML = "<td>延長工時合計</td><td>" + t.otTotalRaw.toFixed(1) + "</td><td class=\"col-w\">" + t.otTotalWeighted.toFixed(2) + "</td>";
-    tbody.appendChild(totalTr);
 
     var mr = t.manualReport || 0;
     var mrTr = document.createElement("tr");
@@ -815,8 +839,10 @@
   }
   // 班別色塊在框內的位置:早班置中、大夜靠上、晚班靠下
   var SHIFT_POS = { "常日":"", "白班":"", "08~20":"", "大夜":"pos-top", "小夜":"pos-bottom", "12~24":"pos-bottom" };
+  // 月曆格子只放得下 2 個字;完整名稱放在 title
   function shortHolidayName(name){
-    return name.replace(/紀念日$/, "").replace(/^春節/, "");
+    var short = name.replace(/^春節/, "").replace(/(紀念日|節|夜)$/, "");
+    return short.slice(0, 2);
   }
   function buildCellTop(p, hol){
     var top = document.createElement("div");
@@ -858,7 +884,7 @@
       var entry = STORE.entries[dk];
       var isDisaster = !!STORE.disasters[dk];
       var cell = document.createElement("div");
-      cell.className = "cell" + (dk === todayKey ? " today" : "") + (isDisaster ? " disaster-day" : "");
+      cell.className = "cell" + (dk === todayKey ? " today" : "") + (isDisaster ? " disaster-day" : "") + (dk === editingKey ? " selected" : "");
       cell.dataset.key = dk;
       var hol = STORE.holidays[dk];
       var top = buildCellTop(p, hol);
@@ -883,7 +909,7 @@
         var effShift = effectiveShiftType(dk);
         if (effShift && SHIFT_META[effShift]){
           var meta = SHIFT_META[effShift];
-          var isOff = effShift === "大休" || effShift === "小休" || effShift === "休假";
+          var isOff = effShift === "大休" || effShift === "小休" || effShift === "休假" || effShift === "補假";
           box = document.createElement("div");
           box.className = "shift-box" + (isOff ? " off" : "") + (SHIFT_POS[effShift] ? " " + SHIFT_POS[effShift] : "");
           var lab = document.createElement("div");
@@ -934,25 +960,14 @@
   // ---------- day editor ----------
   function computePreview(){
     var backupEntry = STORE.entries[editingKey];
-    var hadDisaster = Object.prototype.hasOwnProperty.call(STORE.disasters, editingKey);
-    var backupDisaster = STORE.disasters[editingKey];
-    var fmap = flagMap();
-    var hadCompRest = Object.prototype.hasOwnProperty.call(fmap, editingKey);
-    var backupCompRest = fmap[editingKey];
 
     STORE.entries[editingKey] = {
       shiftType: pendingType,
       otHours: parseFloat(document.getElementById("otInput").value) || 0,
       leaveType: pendingLeave
     };
-    if (pendingDisaster) STORE.disasters[editingKey] = true; else delete STORE.disasters[editingKey];
-    if (pendingCompRest) fmap[editingKey] = true; else delete fmap[editingKey];
-
     var r = computeDay(editingKey);
-
     STORE.entries[editingKey] = backupEntry;
-    if (hadDisaster) STORE.disasters[editingKey] = backupDisaster; else delete STORE.disasters[editingKey];
-    if (hadCompRest) fmap[editingKey] = backupCompRest; else delete fmap[editingKey];
 
     return r;
   }
@@ -973,10 +988,6 @@
     pendingType = entry.shiftType || "";
     pendingLeave = entry.leaveType || "";
 
-    var p = parseKey(key);
-    var d = new Date(p.y, p.m, p.d);
-    document.getElementById("sheetTitle").innerHTML = (p.m+1) + "月" + p.d + "日" + '<span class="wd">週' + WEEKDAY_NAMES[d.getDay()] + "</span>";
-
     // 自動排班群組不需要手動選班別;「其他/手動輸入」仍保留班別按鈕
     var hasAutoGroup = !!GROUP_CYCLES[STORE.group];
     var typeGrid = document.getElementById("typeGrid");
@@ -992,7 +1003,7 @@
           Array.prototype.forEach.call(typeGrid.querySelectorAll(".opt-btn"), function(b){
             b.classList.toggle("selected", b === btn && pendingType === type);
           });
-          updateHolInfo(); renderPreview();
+          updateHolInfo(); saveEditor();
         });
         typeGrid.appendChild(btn);
       });
@@ -1002,7 +1013,7 @@
       clearTypeBtn.addEventListener("click", function(){
         pendingType = "";
         Array.prototype.forEach.call(typeGrid.querySelectorAll(".opt-btn"), function(b){ b.classList.remove("selected"); });
-        renderPreview();
+        saveEditor();
       });
       typeGrid.appendChild(clearTypeBtn);
     }
@@ -1031,59 +1042,31 @@
     leaveSel.value = pendingLeave;
     document.getElementById("noteInput").value = entry.note || "";
 
-    pendingDisaster = !!STORE.disasters[key];
-    pendingCompRest = !!flagMap()[key];
-    document.getElementById("compRestBtn").textContent = isWeekdayGroup() ? "假日出勤" : "休息日加班";
-    updateFlagBtns();
-
     updateHolInfo();
     renderPreview();
-    document.getElementById("overlay").classList.add("open");
+    Array.prototype.forEach.call(document.querySelectorAll("#calGrid .cell.selected"), function(c){ c.classList.remove("selected"); });
+    var selCell = document.querySelector('#calGrid .cell[data-key="' + key + '"]');
+    if (selCell) selCell.classList.add("selected");
   }
-
-  function updateFlagBtns(){
-    document.getElementById("disasterBtn").classList.toggle("selected", pendingDisaster);
-    document.getElementById("compRestBtn").classList.toggle("selected", pendingCompRest);
-  }
-  document.getElementById("disasterBtn").addEventListener("click", function(){
-    pendingDisaster = !pendingDisaster;
-    updateFlagBtns();
-    if (pendingDisaster) STORE.disasters[editingKey] = true; else delete STORE.disasters[editingKey];
-    saveData();
-    renderPreview();
-    renderCalendar();
-    renderBreakdown();
-    renderHero();
-  });
-  document.getElementById("compRestBtn").addEventListener("click", function(){
-    pendingCompRest = !pendingCompRest;
-    updateFlagBtns();
-    if (pendingCompRest) flagMap()[editingKey] = true; else delete flagMap()[editingKey];
-    saveData();
-    renderPreview();
-    renderCalendar();
-    renderBreakdown();
-    renderHero();
-  });
 
   function updateHolInfo(){
     var hol = STORE.holidays[editingKey];
     var box = document.getElementById("holInfo");
     if (hol){
       box.style.display = "block";
-      box.textContent = "假日資訊：" + hol.name + "（" + hol.type + (hol.cny ? "・除夕初一初二" : "") + "）— 可至右上「假日」管理";
+      box.textContent = "假日資訊：" + hol.name + "（" + hol.type + (hol.cny ? "・除夕初一初二" : "") + "）— 可至右上「特殊日」管理";
     } else {
       box.style.display = "none";
     }
   }
 
-  document.getElementById("otInput").addEventListener("change", renderPreview);
+  // 下方面板直接編輯,每次變更立即存檔
+  document.getElementById("otInput").addEventListener("change", saveEditor);
   document.getElementById("leaveSelect").addEventListener("change", function(){
     pendingLeave = this.value;
-    renderPreview();
+    saveEditor();
   });
-
-  function closeEditor(){ document.getElementById("overlay").classList.remove("open"); editingKey = null; }
+  document.getElementById("noteInput").addEventListener("input", saveEditor);
 
   function saveEditor(){
     if (!editingKey) return;
@@ -1096,28 +1079,69 @@
       STORE.entries[editingKey] = { shiftType: pendingType, otHours: otVal, leaveType: pendingLeave };
       if (note) STORE.entries[editingKey].note = note;
     }
-    if (pendingDisaster) STORE.disasters[editingKey] = true; else delete STORE.disasters[editingKey];
-    if (pendingCompRest) flagMap()[editingKey] = true; else delete flagMap()[editingKey];
 
     saveData();
-    closeEditor();
-    renderAll();
+    renderPreview();
+    renderCalendar();
+    renderBreakdown();
+    renderHero();
   }
 
   // ---------- holiday manager ----------
   var holEditingKey = null;
   var holPendingType = "特殊節日";
+  function holTypeClass(t){ return t === "特殊節日" ? "special" : t === "放假日" ? "dayoff" : "national"; }
+
+  // 特殊日管理:國定假日 / 天災停班 / 休息日加班(常日班為假日出勤),三個分頁
+  var spTab = "holiday";
+  function flagLabel(){ return isWeekdayGroup() ? "假日出勤" : "休息日加班"; }
+  function spMap(){ return spTab === "disaster" ? STORE.disasters : flagMap(); }
+  function setSpTab(tab){
+    spTab = tab;
+    Array.prototype.forEach.call(document.querySelectorAll("#spTabs button"), function(b){ b.classList.toggle("on", b.dataset.tab === tab); });
+    document.getElementById("spFlagTab").textContent = flagLabel();
+    document.getElementById("holForm").hidden = tab !== "holiday";
+    document.getElementById("dateForm").hidden = tab === "holiday";
+    document.getElementById("govOpenBtn").hidden = tab !== "holiday";
+    document.getElementById("dateFormLabel").textContent = "新增" + (tab === "disaster" ? "天災停班" : flagLabel()) + "日期";
+    document.getElementById("spDateInput").value = "";
+    document.getElementById("holSaveBtn").textContent = tab === "holiday" ? "新增／更新" : "新增";
+    renderHolList();
+  }
+  Array.prototype.forEach.call(document.querySelectorAll("#spTabs button"), function(b){
+    b.addEventListener("click", function(){ setSpTab(b.dataset.tab); });
+  });
+  function renderDateList(el){
+    var map = spMap();
+    var keys = Object.keys(map).filter(function(k){ return map[k]; }).sort();
+    if (keys.length === 0){ el.innerHTML = '<div class="history-empty">尚無日期</div>'; return; }
+    keys.forEach(function(dk){
+      var p = parseKey(dk);
+      var row = document.createElement("div");
+      row.className = "hol-row";
+      row.innerHTML = '<span>' + dk + '（週' + WEEKDAY_NAMES[new Date(p.y, p.m, p.d).getDay()] + '）</span>';
+      var delBtn = document.createElement("button");
+      delBtn.textContent = "刪除";
+      delBtn.addEventListener("click", function(){
+        delete map[dk];
+        saveData(); renderHolList(); renderAll();
+      });
+      row.appendChild(delBtn);
+      el.appendChild(row);
+    });
+  }
 
   function renderHolList(){
     var el = document.getElementById("holList");
     el.innerHTML = "";
+    if (spTab !== "holiday"){ renderDateList(el); return; }
     var keys = Object.keys(STORE.holidays).sort();
     if (keys.length === 0){ el.innerHTML = '<div class="history-empty">尚無假日資料</div>'; return; }
     keys.forEach(function(dk){
       var h = STORE.holidays[dk];
       var row = document.createElement("div");
       row.className = "hol-row";
-      row.innerHTML = '<span>' + dk + ' ' + h.name + (h.cny ? ' 🧧' : '') + '<span class="htype ' + (h.type==="特殊節日"?"special":"national") + '">' + h.type + '</span></span>';
+      row.innerHTML = '<span>' + dk + ' ' + h.name + (h.cny ? ' 🧧' : '') + '<span class="htype ' + holTypeClass(h.type) + '">' + h.type + '</span></span>';
       var btnWrap = document.createElement("span");
       var editBtn = document.createElement("button");
       editBtn.textContent = "編輯";
@@ -1146,13 +1170,15 @@
   function updateHolTypeBtns(){
     document.getElementById("holTypeSpecial").classList.toggle("selected", holPendingType === "特殊節日");
     document.getElementById("holTypeNational").classList.toggle("selected", holPendingType === "國定假日");
+    document.getElementById("holTypeDayoff").classList.toggle("selected", holPendingType === "放假日");
   }
   document.getElementById("holTypeSpecial").addEventListener("click", function(){ holPendingType = "特殊節日"; updateHolTypeBtns(); });
   document.getElementById("holTypeNational").addEventListener("click", function(){ holPendingType = "國定假日"; updateHolTypeBtns(); });
+  document.getElementById("holTypeDayoff").addEventListener("click", function(){ holPendingType = "放假日"; updateHolTypeBtns(); });
 
   document.getElementById("holBtn").addEventListener("click", function(){
     fillHolForm("", null);
-    renderHolList();
+    setSpTab("flag");
     document.getElementById("holOverlay").classList.add("open");
   });
   document.getElementById("holCancelBtn").addEventListener("click", function(){
@@ -1165,6 +1191,17 @@
     if (e.target === this) this.classList.remove("open");
   });
   document.getElementById("holSaveBtn").addEventListener("click", function(){
+    if (spTab !== "holiday"){
+      var sdk = document.getElementById("spDateInput").value;
+      if (!sdk){ showToast("請選擇日期"); return; }
+      spMap()[sdk] = true;
+      saveData();
+      document.getElementById("spDateInput").value = "";
+      renderHolList();
+      renderAll();
+      showToast("已新增");
+      return;
+    }
     var dk = document.getElementById("holDateInput").value;
     var name = document.getElementById("holNameInput").value.trim();
     var cny = document.getElementById("holCnyCheck").checked;
@@ -1176,6 +1213,148 @@
     renderAll();
     showToast("已儲存假日");
   });
+
+  // ---------- 政府行事曆匯入 ----------
+  // 國定假日算節日當天;補假、小年夜、新制節日(教師節/光復節/行憲)匯入成「放假日」
+  var GOV_URL = "https://cdn.jsdelivr.net/gh/ruyut/TaiwanCalendar/data/";
+  var GOV_NAMES = {
+    "開國紀念日": { name:"元旦", type:"特殊節日" },
+    "中華民國開國紀念日": { name:"元旦", type:"特殊節日" },
+    "農曆除夕": { name:"除夕", type:"特殊節日", cny:true },
+    "除夕": { name:"除夕", type:"特殊節日", cny:true },
+    "中秋節": { name:"中秋節", type:"特殊節日" },
+    "補假": { name:"補假", type:"放假日" },
+    "小年夜": { name:"小年夜", type:"放假日" },
+    "孔子誕辰紀念日/教師節": { name:"教師節", type:"放假日" },
+    "臺灣光復暨金門古寧頭大捷紀念日": { name:"光復節", type:"放假日" },
+    "行憲紀念日": { name:"行憲紀念日", type:"放假日" }
+  };
+  var SPRING_DAYS = [
+    { name:"初一", type:"特殊節日", cny:true },
+    { name:"初二", type:"特殊節日", cny:true },
+    { name:"春節初三", type:"國定假日" }
+  ];
+  function fetchGovYear(y){
+    return fetch(GOV_URL + y + ".json", { cache: "no-cache" }).then(function(res){
+      if (!res.ok) throw new Error("notfound");
+      return res.json();
+    });
+  }
+  function mapGovDays(days){
+    var springIdx = 0;
+    var out = [];
+    days.forEach(function(d){
+      if (!d.isHoliday || !d.description) return;
+      var dk = d.date.slice(0,4) + "-" + d.date.slice(4,6) + "-" + d.date.slice(6,8);
+      var desc = d.description.trim();
+      var m;
+      if (desc === "春節"){
+        m = SPRING_DAYS[Math.min(springIdx, SPRING_DAYS.length-1)];
+        springIdx++;
+      } else {
+        m = GOV_NAMES[desc] || { name: desc, type:"國定假日" };
+      }
+      var existing = STORE.holidays[dk];
+      out.push({
+        date: dk, week: d.week, govName: desc,
+        name: m.name, type: m.type, cny: !!m.cny,
+        exists: !!existing,
+        checked: !(existing && existing.name === m.name)
+      });
+    });
+    return out;
+  }
+  var govItems = [];
+  var govReq = 0;
+  function renderGovList(){
+    var el = document.getElementById("govList");
+    el.innerHTML = "";
+    if (!govItems.length){ el.innerHTML = '<div class="gov-msg">這一年沒有放假資料</div>'; return; }
+    govItems.forEach(function(it, i){
+      var row = document.createElement("label");
+      row.className = "gov-row";
+      var note = [];
+      if (it.exists) note.push("假日表已有此日期");
+      if (it.name !== it.govName) note.push("政府名稱：" + it.govName);
+      row.innerHTML = '<input type="checkbox"' + (it.checked ? " checked" : "") + '>' +
+        '<span class="gd">' + it.date.slice(5).replace("-","/") + '（' + it.week + '）</span>' +
+        '<span class="gn">' + it.name + (it.cny ? " 🧧" : "") +
+        '<span class="gt ' + holTypeClass(it.type) + '">' + it.type + '</span>' +
+        (note.length ? '<span class="gnote">' + note.join("・") + '</span>' : "") + '</span>';
+      row.querySelector("input").addEventListener("change", function(){ govItems[i].checked = this.checked; });
+      el.appendChild(row);
+    });
+  }
+  function loadGovYear(y){
+    var el = document.getElementById("govList");
+    el.innerHTML = '<div class="gov-msg">讀取中…</div>';
+    govItems = [];
+    var req = ++govReq;
+    fetchGovYear(y).then(function(days){
+      if (req !== govReq) return;
+      govItems = mapGovDays(days);
+      renderGovList();
+    }).catch(function(e){
+      if (req !== govReq) return;
+      el.innerHTML = '<div class="gov-msg">' + (e && e.message === "notfound" ? y + " 年的行事曆還沒公布" : "讀取失敗，請確認網路連線後再試") + '</div>';
+    });
+  }
+  function openGovImport(year){
+    var sel = document.getElementById("govYear");
+    var thisYear = today.getFullYear();
+    sel.innerHTML = "";
+    [thisYear, thisYear+1, thisYear+2].forEach(function(y){
+      var o = document.createElement("option");
+      o.value = y; o.textContent = y + " 年";
+      sel.appendChild(o);
+    });
+    sel.value = year || thisYear + 1;
+    document.getElementById("govOverlay").classList.add("open");
+    loadGovYear(+sel.value);
+  }
+  document.getElementById("govYear").addEventListener("change", function(){ loadGovYear(+this.value); });
+  document.getElementById("govOpenBtn").addEventListener("click", function(){ openGovImport(); });
+  function closeGov(){ document.getElementById("govOverlay").classList.remove("open"); }
+  document.getElementById("govCloseXBtn").addEventListener("click", closeGov);
+  document.getElementById("govCancelBtn").addEventListener("click", closeGov);
+  document.getElementById("govOverlay").addEventListener("click", function(e){ if (e.target === this) closeGov(); });
+  document.getElementById("govAddBtn").addEventListener("click", function(){
+    var n = 0;
+    govItems.forEach(function(it){
+      if (!it.checked) return;
+      STORE.holidays[it.date] = { name: it.name, type: it.type, cny: it.cny };
+      n++;
+    });
+    if (!n){ showToast("沒有勾選任何假日"); return; }
+    saveData();
+    closeGov();
+    document.getElementById("yearBanner").hidden = true;
+    if (document.getElementById("holOverlay").classList.contains("open")) renderHolList();
+    renderAll();
+    showToast("已加入 " + n + " 個假日");
+  });
+
+  // 明年行事曆公布後提醒一次(每天最多檢查一次,關掉就不再提醒同一年)
+  function checkNextYear(){
+    var ny = today.getFullYear() + 1;
+    var hasNext = Object.keys(STORE.holidays).some(function(k){ return k.slice(0,4) === String(ny); });
+    if (hasNext) return;
+    try {
+      if (localStorage.getItem("govDismissed") === String(ny)) return;
+      var todayStr = fmtKey(today.getFullYear(), today.getMonth(), today.getDate());
+      if (localStorage.getItem("govChecked") === todayStr) return;
+      localStorage.setItem("govChecked", todayStr);
+    } catch(e){}
+    fetchGovYear(ny).then(function(){
+      document.getElementById("yearBannerText").textContent = ny + " 年行事曆已公布，要匯入假日嗎？";
+      document.getElementById("yearBanner").hidden = false;
+      document.getElementById("yearBannerBtn").onclick = function(){ openGovImport(ny); };
+      document.getElementById("yearBannerClose").onclick = function(){
+        document.getElementById("yearBanner").hidden = true;
+        try { localStorage.setItem("govDismissed", String(ny)); } catch(e){}
+      };
+    }).catch(function(){});
+  }
 
   // ---------- export / import ----------
   // CSV 一天一列;班別欄匯出的是當天實際班別,匯入時跟自動排班相同就不另存
@@ -1261,7 +1440,7 @@
       if (isYes(get(r, "假日出勤"))) STORE.holidayWork[dk] = true; else delete STORE.holidayWork[dk];
       var hname = get(r, "假日名稱");
       if (hname){
-        STORE.holidays[dk] = { name: hname, type: get(r, "假日類型") === "特殊節日" ? "特殊節日" : "國定假日", cny: isYes(get(r, "除夕初一初二")) };
+        STORE.holidays[dk] = { name: hname, type: ["特殊節日","放假日"].indexOf(get(r, "假日類型")) >= 0 ? get(r, "假日類型") : "國定假日", cny: isYes(get(r, "除夕初一初二")) };
       }
       count++;
     });
@@ -1365,10 +1544,6 @@
       }
     }, {passive:true});
   })();
-  document.getElementById("cancelBtn").addEventListener("click", closeEditor);
-  document.getElementById("closeXBtn").addEventListener("click", closeEditor);
-  document.getElementById("saveBtn").addEventListener("click", saveEditor);
-  document.getElementById("overlay").addEventListener("click", function(e){ if (e.target === this) closeEditor(); });
   document.getElementById("exportBtn").addEventListener("click", doExport);
   document.getElementById("importBtn").addEventListener("click", function(){ document.getElementById("importFile").click(); });
   document.getElementById("importFile").addEventListener("change", function(e){
@@ -1389,10 +1564,9 @@
     el.innerHTML = "";
     GROUP_LIST.forEach(function(g){
       var row = document.createElement("div");
-      row.className = "hol-row";
-      row.style.cursor = "pointer";
+      row.className = "hol-row group-row";
       var auto = GROUP_CYCLES[g] ? "（自動排班）" : "（手動輸入）";
-      row.innerHTML = '<span>' + g + ' <span style="color:var(--ink-faint);font-size:11px">' + auto + '</span></span>' +
+      row.innerHTML = '<span>' + g + ' <span class="group-sub">' + auto + '</span></span>' +
         (STORE.group === g ? '<span style="color:var(--accent);font-weight:700">已選擇</span>' : '');
       row.addEventListener("click", function(){
         STORE.group = g;
@@ -1404,9 +1578,6 @@
     });
   }
   document.getElementById("groupTag").addEventListener("click", function(){
-    document.getElementById("groupBtn").click();
-  });
-  document.getElementById("groupBtn").addEventListener("click", function(){
     renderGroupList();
     document.getElementById("groupOverlay").classList.add("open");
   });
@@ -1423,6 +1594,7 @@
 
   loadData();
   renderAll();
+  checkNextYear();
   if (!STORE.group){
     renderGroupList();
     document.getElementById("groupOverlay").classList.add("open");
