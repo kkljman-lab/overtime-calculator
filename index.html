@@ -7,7 +7,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="加班計算器（開放版）">
-<title>輪班加班時數計算器</title>
+<title>加班計算器</title>
 <style>
   :root {
     --bg: #F6F5F1;
@@ -20,8 +20,8 @@
     --accent: #C97A1A;
     --accent-soft: #FBEEDD;
     --leave: #B4483A;
-    --shift-day: #2455D8;
-    --shift-evening: #BD5A16;
+    --shift-day: #0A1FE6;
+    --shift-evening: #C4570C;
     --shift-night: #111111;
     --shift-off: #DC3B30;
     --shift-off-bg: #FBF5F4;
@@ -91,6 +91,15 @@
   .hero-label { font-size: 12.5px; color: var(--ink-soft); margin: 0 0 4px; }
   .hero-number { font-family: var(--mono); font-size: 38px; font-weight: 600; line-height: 1; color: var(--accent); letter-spacing: -0.5px; }
   .hero-number span.unit { font-size: 14px; font-weight: 500; color: var(--ink-soft); margin-left: 4px; font-family: var(--sans); }
+  /* 加權後相關數字暫時隱藏;要恢復就拿掉 <body> 的 hide-weighted */
+  .hide-weighted .col-w, .hide-weighted .hero-side { display: none; }
+  .hide-weighted .hero-label { font-size: 15px; }
+  .hide-weighted .hero-number { font-size: 46px; }
+  .hide-weighted .hero-number span.unit { font-size: 17px; }
+  .hide-weighted .breakdown table { font-size: 16px; }
+  .hide-weighted .breakdown th { font-size: 13px; }
+  .hide-weighted .breakdown td { padding: 10px 0; }
+  .hide-weighted .cat-detail-item { font-size: 14px; }
   .hero-side { text-align: right; font-size: 12px; color: var(--ink-soft); }
   .hero-side .val { font-family: var(--mono); font-size: 17px; color: var(--ink); display: block; }
   .trend { display: flex; align-items: flex-end; gap: 5px; height: 36px; margin-top: 14px; }
@@ -100,6 +109,10 @@
   .trend .bar-label { font-size: 9px; color: var(--ink-faint); font-family: var(--mono); }
 
   .breakdown { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 4px 14px 10px; margin-bottom: 12px; }
+  .bd-toggle { display: flex; justify-content: space-between; align-items: center; width: 100%; background: none; border: none; padding: 10px 0 6px; font-family: var(--sans); font-size: 15px; font-weight: 600; color: var(--ink); cursor: pointer; }
+  .bd-chev { color: var(--ink-faint); font-size: 13px; transition: transform 0.2s; }
+  .breakdown.collapsed .bd-chev { transform: rotate(-90deg); }
+  .breakdown.collapsed table { display: none; }
   .breakdown table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
   .breakdown th { text-align: right; font-weight: 500; color: var(--ink-faint); font-size: 10.5px; padding: 8px 0 4px; }
   .breakdown th:first-child { text-align: left; }
@@ -136,35 +149,49 @@
   .qs-pill { font-size: 11.5px; color: var(--ink-soft); background: var(--surface); border: 1px solid var(--border); border-radius: 999px; padding: 4px 9px; font-family: var(--mono); }
   .qs-pill b { color: var(--ink); font-weight: 600; }
 
-  .weekday-row { display: grid; grid-template-columns: repeat(7, 1fr); margin-bottom: 4px; background: #1a1a1a; border-radius: 8px; overflow: hidden; }
-  .weekday-row div { text-align: center; font-size: 13px; font-weight: 700; color: #fff; padding: 7px 0; }
-  .weekday-row div:first-child { color: #FF6B6B; }
-  .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; }
+  /* 月曆:仿「愛輪班」風格 */
+  .cal-wrap { --cal-line: #9E9E9E; --cal-weekend: #FBE3F3; --cal-num: #3A3A3A; --cal-dim: #A5A5A5; --cal-box: #2B2B2B; --cal-red: #E8141E; --cal-small: #555;
+    border-top: 1px solid var(--cal-line); border-left: 1px solid var(--cal-line); background: #fff; margin: 0 -14px; }
+  @media (prefers-color-scheme: dark) {
+    .cal-wrap { --cal-line: #3A3E46; --cal-weekend: #2E2129; --cal-num: #EDEEF0; --cal-dim: #5A606B; --cal-box: #8A909A; --cal-red: #FF5A5F; --cal-small: #9AA1AC; background: var(--surface);
+      --shift-day: #1F3BFF; --shift-evening: #C4570C; --shift-night: #000; }
+  }
+  .weekday-row { display: grid; grid-template-columns: repeat(7, 1fr); background: #000; }
+  .weekday-row div { text-align: center; font-size: clamp(15px, 4.6vw, 20px); font-weight: 600; color: #fff; padding: 4px 0; border-right: 1px solid #555; border-bottom: 1px solid var(--cal-line); }
+  .weekday-row div:first-child, .weekday-row div:last-child { color: #FF5C8A; }
+  .grid { display: grid; grid-template-columns: repeat(7, 1fr); }
   .grid.slide-next { animation: slideNext 0.22s ease; }
   .grid.slide-prev { animation: slidePrev 0.22s ease; }
   @keyframes slideNext { from { transform: translateX(22px); opacity: 0.3; } to { transform: translateX(0); opacity: 1; } }
   @keyframes slidePrev { from { transform: translateX(-22px); opacity: 0.3; } to { transform: translateX(0); opacity: 1; } }
   .cell {
-    aspect-ratio: 1 / 1.25; border-radius: 4px; border: 1px solid var(--border); background: var(--surface);
-    position: relative; cursor: pointer; padding: 3px 3px 4px; display: flex; flex-direction: column;
-    justify-content: space-between; overflow: hidden;
+    aspect-ratio: 1 / 1.3; border-right: 1px solid var(--cal-line); border-bottom: 1px solid var(--cal-line);
+    position: relative; cursor: pointer; padding: 0 2px 3px; display: flex; flex-direction: column; overflow: hidden; min-width: 0;
   }
-  .cell.blank { border: none; background: transparent; cursor: default; }
-  .grid > .cell:nth-child(7n+1):not(.blank), .grid > .cell:nth-child(7n):not(.blank) { background: #FBEAF3; }
-  @media (prefers-color-scheme: dark) {
-    .grid > .cell:nth-child(7n+1):not(.blank), .grid > .cell:nth-child(7n):not(.blank) { background: #2E2129; }
-  }
-  .cell.today { border: 2px solid var(--accent); }
-  .cell.disaster-day { border: 2px solid var(--disaster); background: color-mix(in srgb, var(--disaster) 10%, var(--surface)); }
-  .cell .date-num { font-size: 12.5px; font-weight: 700; color: var(--ink); font-family: var(--sans); display: flex; align-items: center; justify-content: flex-start; gap: 2px; overflow: hidden; white-space: nowrap; }
-  .cell .shift-label { position: relative; font-size: 12.5px; font-weight: 700; text-align: center; border-radius: 4px; padding: 5px 0; line-height: 1.15; flex: 1; display: flex; align-items: center; justify-content: center; margin-top: 2px; }
-  .cell .leave-label { position: relative; font-size: 11px; font-weight: 700; text-align: center; border-radius: 4px; padding: 5px 0; background: var(--leave-bg); color: var(--leave-fg); line-height: 1.15; flex: 1; display: flex; align-items: center; justify-content: center; margin-top: 2px; }
-  .cell .disaster-mark { position: absolute; bottom: 2px; left: 4px; font-size: 8px; font-weight: 800; color: #fff; line-height: 1; white-space: nowrap; }
-  .cell .comprest-mark { position: absolute; top: 2px; left: 4px; font-size: 8px; font-weight: 800; color: #fff; line-height: 1; }
-  .cell .adj-badge { position: absolute; bottom: 1px; right: 1px; font-size: 8px; font-family: var(--mono); font-weight: 700; padding: 1px 3px; border-radius: 4px; color: #fff; background: #5B9A5B; z-index: 2; }
-  .cell .hol-tag { font-family: var(--sans); font-size: 7.5px; font-weight: 700; padding: 0 2px; border-radius: 3px; color: #fff; white-space: nowrap; line-height: 1.5; flex-shrink: 0; }
-  .cell .hol-tag.special { background: var(--holiday-special); }
-  .cell .hol-tag.national { background: var(--holiday-national); }
+  .grid > .cell:nth-child(7n+1):not(.blank), .grid > .cell:nth-child(7n):not(.blank) { background: var(--cal-weekend); }
+  .cell.blank { cursor: default; }
+  .cell.today { box-shadow: inset 0 0 0 2px var(--accent); }
+  .cell.disaster-day { box-shadow: inset 0 0 0 2px var(--disaster); }
+  .cell .cell-top { position: relative; display: flex; align-items: flex-end; justify-content: space-between; height: clamp(20px, 5.8vw, 30px); flex-shrink: 0; }
+  .cell .lunar { font-size: clamp(8px, 2.4vw, 11px); color: var(--cal-small); white-space: nowrap; overflow: hidden; line-height: 1.1; padding-bottom: 2px; min-width: 0; }
+  .cell .lunar.hol-national { color: var(--cal-red); font-weight: 600; }
+  .cell .lunar.hol-special { color: var(--holiday-special); font-weight: 700; }
+  .cell .date-num { font-size: clamp(16px, 5.2vw, 24px); font-weight: 700; color: var(--cal-num); line-height: 1; flex-shrink: 0; margin-left: 1px; }
+  .cell .date-num.hol { color: var(--cal-red); }
+  .cell.blank .date-num { color: var(--cal-dim); }
+  .cell .adj-badge { position: absolute; top: 1px; left: 22%; font-size: clamp(8px, 2.5vw, 11px); font-weight: 600; line-height: 1.2; padding: 0 3px; border-radius: 3px; color: #000; background: #2BE32B; z-index: 2; white-space: nowrap; }
+  .cell .shift-box { position: relative; flex: 1; margin-top: 2px; border: 1.5px solid var(--cal-box); border-radius: 6px; display: flex; flex-direction: column; justify-content: center; overflow: hidden; min-height: 0; }
+  .cell .shift-box.pos-top { justify-content: flex-start; }
+  .cell .shift-box.pos-bottom { justify-content: flex-end; }
+  .cell .shift-box.off { border-color: var(--cal-red); align-items: center; }
+  .cell .shift-box.leave { border-color: var(--leave-fg); }
+  .cell .shift-label { font-size: clamp(14px, 4.9vw, 22px); font-weight: 500; text-align: center; border-radius: 4px; line-height: 1; padding: 0.12em 0; white-space: nowrap; overflow: hidden; }
+  .cell .shift-label.small { font-size: clamp(10px, 3.2vw, 15px); padding: 0.4em 0; }
+  .cell .shift-box.off .shift-label { color: var(--cal-red); background: none; }
+  .cell .shift-box.leave .shift-label { background: var(--leave-bg); color: var(--leave-fg); font-size: clamp(12px, 4vw, 18px); font-weight: 600; }
+  .cell .cell-mark { position: absolute; bottom: 1px; font-size: clamp(8px, 2.3vw, 10px); font-weight: 700; color: #fff; line-height: 1.3; padding: 0 2px; border-radius: 3px; z-index: 2; white-space: nowrap; }
+  .cell .disaster-mark { left: 1px; background: var(--disaster); }
+  .cell .comprest-mark { right: 1px; background: var(--comprest); }
 
   .history { margin-top: 24px; }
   .history h3 { font-size: 12.5px; color: var(--ink-soft); font-weight: 600; margin: 0 0 8px; }
@@ -200,6 +227,10 @@
   .adj-input-row { display: flex; gap: 8px; margin-bottom: 8px; }
   .adj-input-row input, .form-input { flex: 1; font-family: var(--mono); font-size: 15px; padding: 9px 11px; border-radius: 9px; border: 1.5px solid var(--border); background: var(--bg); color: var(--ink); width: 100%; }
   .preset-row { display: flex; gap: 6px; flex-wrap: wrap; }
+  .form-select { appearance: none; -webkit-appearance: none; font-family: var(--sans); font-size: 16px; padding-right: 32px; cursor: pointer;
+    background-image: linear-gradient(45deg, transparent 50%, var(--ink-soft) 50%), linear-gradient(135deg, var(--ink-soft) 50%, transparent 50%);
+    background-position: calc(100% - 17px) 50%, calc(100% - 12px) 50%; background-size: 5px 5px; background-repeat: no-repeat; }
+  .sheet-title .wd { font-weight: 600; margin-left: 8px; }
   .preset-btn { font-family: var(--mono); font-size: 11.5px; padding: 5px 9px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface-2); color: var(--ink-soft); cursor: pointer; }
   .check-row { display: flex; align-items: center; gap: 8px; padding: 9px 0; font-size: 13px; }
   .check-row input { width: 18px; height: 18px; }
@@ -223,11 +254,11 @@
   .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 </style>
 </head>
-<body>
+<body class="hide-weighted">
 <div class="wrap">
 
   <header class="top">
-    <h1>輪班加班時數計算器</h1>
+    <h1>加班計算器</h1>
     <div class="btn-row">
       <button class="icon-btn" id="groupBtn">班別群組</button><button class="icon-btn" id="holBtn">假日</button><button class="icon-btn" id="importBtn">匯入</button><button class="icon-btn" id="exportBtn">匯出</button>
     </div>
@@ -243,8 +274,10 @@
     <button id="nextPeriod" aria-label="下期">›</button>
   </div>
 
+  <div class="cal-wrap">
   <div class="weekday-row"><div>日</div><div>一</div><div>二</div><div>三</div><div>四</div><div>五</div><div>六</div></div>
   <div class="grid" id="calGrid"></div>
+  </div>
 
   <section class="hero" style="margin-top:14px">
     <div class="hero-top">
@@ -259,9 +292,12 @@
     <div class="trend" id="trendChart"></div>
   </section>
 
-  <div class="breakdown">
+  <div class="breakdown collapsed" id="breakdownCard">
+    <button type="button" class="bd-toggle" id="breakdownToggle" aria-expanded="false">
+      <span>分類明細</span><span class="bd-chev">▾</span>
+    </button>
     <table>
-      <thead><tr><th>類別</th><th>原始</th><th>加權後</th></tr></thead>
+      <thead><tr><th>類別</th><th>小時</th><th class="col-w">加權後</th></tr></thead>
       <tbody id="breakdownBody"></tbody>
     </table>
   </div>
@@ -272,7 +308,7 @@
   </footer>
 </div>
 
-<input type="file" id="importFile" accept="application/json" style="display:none">
+<input type="file" id="importFile" accept=".csv,text/csv,.json,application/json" style="display:none">
 
 <div class="overlay" id="overlay">
   <div class="sheet">
@@ -282,16 +318,16 @@
     </div>
 
     <div class="sheet-body">
-      <p class="field-label">班別</p>
-      <div class="hol-info" id="shiftInfo" style="display:none"></div>
-      <div class="btn-grid" id="typeGrid"></div>
+      <div id="shiftField">
+        <p class="field-label">班別</p>
+        <div class="btn-grid" id="typeGrid"></div>
+      </div>
 
       <p class="field-label">加班時數（小時）</p>
-      <div class="adj-input-row"><input type="number" step="0.5" min="0" id="otInput" placeholder="0"></div>
-      <div class="preset-row" id="otPresetRow"></div>
+      <select class="form-input form-select" id="otInput"></select>
 
       <p class="field-label">請假</p>
-      <div class="btn-grid" id="leaveGrid"></div>
+      <select class="form-input form-select" id="leaveSelect"></select>
 
       <p class="field-label">特殊標記</p>
       <div class="btn-grid" style="grid-template-columns:1fr 1fr" id="flagGrid">
@@ -361,7 +397,8 @@
   var V2_KEY = "shiftOvertimeData_public_v2";
   var WEEKDAY_NAMES = ["日","一","二","三","四","五","六"];
   var SHIFT_TYPES = ["白班","小夜","大夜","08~20","12~24","大休","小休"];
-  var LEAVE_TYPES = ["事假","病假","特休","例假","公假"];
+  var LEAVE_TYPES = ["特休","身心","補休","公假","事假","病假","例假"];
+  var OT_OPTIONS = [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4];
   var RATE = { otNormal: 1.33, otOver: 1.66 };
 
   var SHIFT_META = {
@@ -682,22 +719,39 @@
       var weighted = raw * cat.rate;
       var tr = document.createElement("tr");
       tr.className = "cat-row" + (raw === 0 ? " zero" : "");
-      tr.innerHTML = "<td>" + cat.label + "</td><td>" + raw.toFixed(1) + "</td><td>" + weighted.toFixed(2) + "</td>";
+      tr.innerHTML = "<td>" + cat.label + "</td><td>" + raw.toFixed(1) + "</td><td class=\"col-w\">" + weighted.toFixed(2) + "</td>";
       tr.addEventListener("click", function(){ toggleCatDetail(cat.key, tr); });
       tbody.appendChild(tr);
     });
     var totalTr = document.createElement("tr");
     totalTr.className = "total";
-    totalTr.innerHTML = "<td>延長工時合計</td><td>" + t.otTotalRaw.toFixed(1) + "</td><td>" + t.otTotalWeighted.toFixed(2) + "</td>";
+    totalTr.innerHTML = "<td>延長工時合計</td><td>" + t.otTotalRaw.toFixed(1) + "</td><td class=\"col-w\">" + t.otTotalWeighted.toFixed(2) + "</td>";
     tbody.appendChild(totalTr);
 
     var mr = t.manualReport || 0;
     var mrTr = document.createElement("tr");
     mrTr.className = "manual-report cat-row" + (mr === 0 ? " zero" : "");
-    mrTr.innerHTML = "<td><b>" + MANUAL_REPORT_CAT.label + "</b></td><td><b>" + mr.toFixed(1) + "</b></td><td><b>" + (mr*MANUAL_REPORT_CAT.rate).toFixed(2) + "</b></td>";
+    mrTr.innerHTML = "<td><b>" + MANUAL_REPORT_CAT.label + "</b></td><td><b>" + mr.toFixed(1) + "</b></td><td class=\"col-w\"><b>" + (mr*MANUAL_REPORT_CAT.rate).toFixed(2) + "</b></td>";
     mrTr.addEventListener("click", function(){ toggleCatDetail("manualReport", mrTr); });
     tbody.appendChild(mrTr);
   }
+
+  // 分類明細平時收合,點標題展開;記住上次狀態
+  (function(){
+    var card = document.getElementById("breakdownCard");
+    var btn = document.getElementById("breakdownToggle");
+    var KEY = "breakdownOpen";
+    function setOpen(open){
+      card.classList.toggle("collapsed", !open);
+      btn.setAttribute("aria-expanded", open ? "true" : "false");
+    }
+    try { setOpen(localStorage.getItem(KEY) === "1"); } catch(e){}
+    btn.addEventListener("click", function(){
+      var open = card.classList.contains("collapsed");
+      setOpen(open);
+      try { localStorage.setItem(KEY, open ? "1" : "0"); } catch(e){}
+    });
+  })();
 
   function toggleCatDetail(key, rowEl){
     var existing = document.querySelectorAll("#breakdownBody .cat-detail");
@@ -733,17 +787,67 @@
     rowEl.parentNode.insertBefore(detailTr, rowEl.nextSibling);
   }
 
+  var LUNAR_FMT = null;
+  try { LUNAR_FMT = new Intl.DateTimeFormat("zh-TW-u-ca-chinese", { month:"long", day:"numeric" }); } catch(e){}
+  var LUNAR_DIGITS = ["","一","二","三","四","五","六","七","八","九","十"];
+  function lunarLabel(y, m, d){
+    if (!LUNAR_FMT || !LUNAR_FMT.formatToParts) return "";
+    try {
+      var parts = LUNAR_FMT.formatToParts(new Date(y, m, d));
+      var mon = "", day = 0;
+      parts.forEach(function(pt){
+        if (pt.type === "month") mon = pt.value;
+        if (pt.type === "day") day = parseInt(pt.value, 10);
+      });
+      if (!day) return "";
+      if (day === 1) return mon.replace("十一月","冬月").replace("十二月","臘月").replace("一月","正月");
+      if (day <= 10) return "初" + LUNAR_DIGITS[day];
+      if (day < 20) return "十" + LUNAR_DIGITS[day-10];
+      if (day === 20) return "二十";
+      if (day < 30) return "廿" + LUNAR_DIGITS[day-20];
+      return "三十";
+    } catch(e){ return ""; }
+  }
+  // 班別色塊在框內的位置:早班置中、大夜靠上、晚班靠下
+  var SHIFT_POS = { "白班":"", "08~20":"", "大夜":"pos-top", "小夜":"pos-bottom", "12~24":"pos-bottom" };
+  function shortHolidayName(name){
+    return name.replace(/紀念日$/, "").replace(/^春節/, "");
+  }
+  function buildCellTop(p, hol){
+    var top = document.createElement("div");
+    top.className = "cell-top";
+    var small = document.createElement("span");
+    small.className = "lunar";
+    if (hol){
+      small.textContent = shortHolidayName(hol.name);
+      small.title = hol.name;
+      small.className += hol.type === "特殊節日" ? " hol-special" : " hol-national";
+    } else {
+      small.textContent = lunarLabel(p.y, p.m, p.d);
+    }
+    var num = document.createElement("span");
+    num.className = "date-num" + (hol ? " hol" : "");
+    num.textContent = p.d;
+    top.appendChild(small);
+    top.appendChild(num);
+    return top;
+  }
+  function appendOutsideCell(grid, dk){
+    var blank = document.createElement("div");
+    blank.className = "cell blank";
+    var top = buildCellTop(parseKey(dk), null);
+    top.firstChild.textContent = "";
+    blank.appendChild(top);
+    grid.appendChild(blank);
+  }
+
   function renderCalendar(){
     var grid = document.getElementById("calGrid");
     grid.innerHTML = "";
     var dates = periodDates(curPeriod);
     var first = parseKey(dates[0]);
     var firstDow = new Date(first.y, first.m, first.d).getDay();
-    for (var i = 0; i < firstDow; i++){
-      var blank = document.createElement("div");
-      blank.className = "cell blank";
-      grid.appendChild(blank);
-    }
+    for (var i = firstDow; i > 0; i--) appendOutsideCell(grid, addDays(dates[0], -i));
     dates.forEach(function(dk){
       var p = parseKey(dk);
       var entry = STORE.entries[dk];
@@ -751,61 +855,58 @@
       var cell = document.createElement("div");
       cell.className = "cell" + (dk === todayKey ? " today" : "") + (isDisaster ? " disaster-day" : "");
       cell.dataset.key = dk;
-
-      var num = document.createElement("div");
-      num.className = "date-num";
       var hol = STORE.holidays[dk];
-      num.textContent = hol ? String(p.d) : ((p.m+1) + "/" + p.d);
-      if (hol){
-        var htag = document.createElement("span");
-        htag.className = "hol-tag " + (hol.type === "特殊節日" ? "special" : "national");
-        htag.textContent = hol.name.length > 2 ? hol.name.slice(0,2) : hol.name;
-        htag.title = hol.name;
-        num.appendChild(htag);
-      }
-      cell.appendChild(num);
-
-      var labelEl;
-      if (entry && entry.leaveType){
-        var lv = document.createElement("div");
-        lv.className = "leave-label";
-        lv.textContent = entry.leaveType;
-        cell.appendChild(lv);
-        labelEl = lv;
-      } else {
-        var effShift = effectiveShiftType(dk);
-        var lab = document.createElement("div");
-        lab.className = "shift-label";
-        if (effShift && SHIFT_META[effShift]){
-          var meta = SHIFT_META[effShift];
-          lab.textContent = effShift;
-          if (effShift.length > 2) lab.style.fontSize = "9.5px";
-          lab.style.color = meta.fg; lab.style.background = meta.bg;
-          if (meta.border) lab.style.border = meta.border;
-        }
-        cell.appendChild(lab);
-        labelEl = lab;
-      }
-
-      if (isDisaster && labelEl){
-        var dmark = document.createElement("span");
-        dmark.className = "disaster-mark";
-        dmark.textContent = "停班";
-        labelEl.appendChild(dmark);
-      }
-
-      if (STORE.compRest[dk] && labelEl){
-        var cmark = document.createElement("span");
-        cmark.className = "comprest-mark";
-        cmark.textContent = "休加";
-        labelEl.appendChild(cmark);
-      }
+      var top = buildCellTop(p, hol);
+      cell.appendChild(top);
 
       if (entry && entry.otHours && !entry.leaveType){
-        var badge = document.createElement("div");
+        var badge = document.createElement("span");
         badge.className = "adj-badge";
-        badge.textContent = "+" + entry.otHours;
-        cell.appendChild(badge);
+        badge.textContent = "+" + Number(entry.otHours).toFixed(1);
+        top.appendChild(badge);
+      }
+
+      var box = null;
+      if (entry && entry.leaveType){
+        box = document.createElement("div");
+        box.className = "shift-box leave";
+        var lv = document.createElement("div");
+        lv.className = "shift-label";
+        lv.textContent = entry.leaveType;
+        box.appendChild(lv);
+      } else {
+        var effShift = effectiveShiftType(dk);
+        if (effShift && SHIFT_META[effShift]){
+          var meta = SHIFT_META[effShift];
+          var isOff = effShift === "大休" || effShift === "小休";
+          box = document.createElement("div");
+          box.className = "shift-box" + (isOff ? " off" : "") + (SHIFT_POS[effShift] ? " " + SHIFT_POS[effShift] : "");
+          var lab = document.createElement("div");
+          lab.className = "shift-label" + (effShift.length > 2 ? " small" : "");
+          lab.textContent = effShift;
+          if (!isOff){ lab.style.color = meta.fg; lab.style.background = meta.bg; }
+          box.appendChild(lab);
+        }
+      }
+      if (!box && (isDisaster || STORE.compRest[dk])){
+        box = document.createElement("div");
+        box.className = "shift-box";
+        box.style.borderColor = "transparent";
+      }
+      if (box){
+        if (isDisaster){
+          var dmark = document.createElement("span");
+          dmark.className = "cell-mark disaster-mark";
+          dmark.textContent = "停班";
+          box.appendChild(dmark);
+        }
+        if (STORE.compRest[dk]){
+          var cmark = document.createElement("span");
+          cmark.className = "cell-mark comprest-mark";
+          cmark.textContent = "休加";
+          box.appendChild(cmark);
+        }
+        cell.appendChild(box);
       }
 
       cell.addEventListener("click", function(){ openEditor(this.dataset.key); });
@@ -813,11 +914,8 @@
     });
     var totalCells = firstDow + dates.length;
     var trailing = (7 - (totalCells % 7)) % 7;
-    for (var j = 0; j < trailing; j++){
-      var blank2 = document.createElement("div");
-      blank2.className = "cell blank";
-      grid.appendChild(blank2);
-    }
+    var lastKey = dates[dates.length-1];
+    for (var j = 1; j <= trailing; j++) appendOutsideCell(grid, addDays(lastKey, j));
   }
 
   // ---------- day editor ----------
@@ -863,24 +961,14 @@
 
     var p = parseKey(key);
     var d = new Date(p.y, p.m, p.d);
-    document.getElementById("sheetTitle").innerHTML = (p.m+1) + "月" + p.d + "日" + '<span class="sub">週' + WEEKDAY_NAMES[d.getDay()] + "</span>";
+    document.getElementById("sheetTitle").innerHTML = (p.m+1) + "月" + p.d + "日" + '<span class="wd">週' + WEEKDAY_NAMES[d.getDay()] + "</span>";
 
+    // 自動排班群組不需要手動選班別;「其他/手動輸入」仍保留班別按鈕
     var hasAutoGroup = !!GROUP_CYCLES[STORE.group];
-    var shiftInfoEl = document.getElementById("shiftInfo");
     var typeGrid = document.getElementById("typeGrid");
-
-    if (hasAutoGroup){
-      typeGrid.style.display = "none";
-      shiftInfoEl.style.display = "block";
-      var effShift = effectiveShiftType(editingKey);
-      shiftInfoEl.textContent = pendingType
-        ? ("目前班別：" + pendingType + "（手動設定，如需變更請用「匯入」更新資料）")
-        : ("目前班別：" + effShift + "（依「" + STORE.group + "」規律自動推算）");
-      typeGrid.innerHTML = "";
-    } else {
-      shiftInfoEl.style.display = "none";
-      typeGrid.style.display = "grid";
-      typeGrid.innerHTML = "";
+    typeGrid.innerHTML = "";
+    document.getElementById("shiftField").style.display = hasAutoGroup ? "none" : "block";
+    if (!hasAutoGroup){
       SHIFT_TYPES.forEach(function(type){
         var btn = document.createElement("button");
         btn.className = "opt-btn" + (pendingType === type ? " selected" : "");
@@ -905,35 +993,28 @@
       typeGrid.appendChild(clearTypeBtn);
     }
 
-    document.getElementById("otInput").value = entry.otHours || "";
-
-    var presetRow = document.getElementById("otPresetRow");
-    presetRow.innerHTML = "";
-    ["0","0.5","1","2","3","4"].forEach(function(v){
-      var b = document.createElement("button");
-      b.className = "preset-btn"; b.textContent = v;
-      b.addEventListener("click", function(){
-        document.getElementById("otInput").value = v === "0" ? "" : v;
-        renderPreview();
-      });
-      presetRow.appendChild(b);
+    var otSel = document.getElementById("otInput");
+    var curOt = entry.otHours || 0;
+    var otOpts = OT_OPTIONS.slice();
+    if (otOpts.indexOf(curOt) < 0){ otOpts.push(curOt); otOpts.sort(function(a,b){ return a-b; }); }
+    otSel.innerHTML = "";
+    otOpts.forEach(function(v){
+      var o = document.createElement("option");
+      o.value = v; o.textContent = v;
+      otSel.appendChild(o);
     });
+    otSel.value = curOt;
 
-    var leaveGrid = document.getElementById("leaveGrid");
-    leaveGrid.innerHTML = "";
-    LEAVE_TYPES.forEach(function(lv){
-      var btn = document.createElement("button");
-      btn.className = "opt-btn" + (pendingLeave === lv ? " selected" : "");
-      btn.textContent = lv;
-      btn.addEventListener("click", function(){
-        pendingLeave = (pendingLeave === lv) ? "" : lv;
-        Array.prototype.forEach.call(leaveGrid.querySelectorAll(".opt-btn"), function(b){
-          b.classList.toggle("selected", b === btn && pendingLeave === lv);
-        });
-        renderPreview();
-      });
-      leaveGrid.appendChild(btn);
+    var leaveSel = document.getElementById("leaveSelect");
+    var leaveOpts = LEAVE_TYPES.slice();
+    if (pendingLeave && leaveOpts.indexOf(pendingLeave) < 0) leaveOpts.push(pendingLeave);
+    leaveSel.innerHTML = '<option value="">無</option>';
+    leaveOpts.forEach(function(lv){
+      var o = document.createElement("option");
+      o.value = lv; o.textContent = lv;
+      leaveSel.appendChild(o);
     });
+    leaveSel.value = pendingLeave;
 
     pendingDisaster = !!STORE.disasters[key];
     pendingCompRest = !!STORE.compRest[key];
@@ -980,7 +1061,11 @@
     }
   }
 
-  document.getElementById("otInput").addEventListener("input", renderPreview);
+  document.getElementById("otInput").addEventListener("change", renderPreview);
+  document.getElementById("leaveSelect").addEventListener("change", function(){
+    pendingLeave = this.value;
+    renderPreview();
+  });
 
   function closeEditor(){ document.getElementById("overlay").classList.remove("open"); editingKey = null; }
 
@@ -1075,8 +1160,100 @@
   });
 
   // ---------- export / import ----------
+  // CSV 一天一列;班別欄匯出的是當天實際班別,匯入時跟自動排班相同就不另存
+  var CSV_HEADER = ["日期","星期","班別","加班時數","請假","天災停班","休息日加班","假日名稱","假日類型","除夕初一初二"];
+  function csvCell(v){
+    v = v == null ? "" : String(v);
+    return /[",\r\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v;
+  }
   function buildExportBlob(){
-    return new Blob([JSON.stringify(STORE, null, 2)], {type:"application/json"});
+    var keys = {};
+    [STORE.entries, STORE.disasters, STORE.compRest, STORE.holidays].forEach(function(obj){
+      Object.keys(obj || {}).forEach(function(k){ if (/^\d{4}-\d{2}-\d{2}$/.test(k)) keys[k] = true; });
+    });
+    var rows = [CSV_HEADER];
+    Object.keys(keys).sort().forEach(function(dk){
+      var p = parseKey(dk);
+      var e = STORE.entries[dk] || {};
+      var hol = STORE.holidays[dk];
+      rows.push([
+        dk,
+        WEEKDAY_NAMES[new Date(p.y, p.m, p.d).getDay()],
+        effectiveShiftType(dk),
+        e.otHours || "",
+        e.leaveType || "",
+        STORE.disasters[dk] ? "是" : "",
+        STORE.compRest[dk] ? "是" : "",
+        hol ? hol.name : "",
+        hol ? hol.type : "",
+        hol && hol.cny ? "是" : ""
+      ]);
+    });
+    var text = "﻿" + rows.map(function(r){ return r.map(csvCell).join(","); }).join("\r\n") + "\r\n";
+    return new Blob([text], {type:"text/csv;charset=utf-8"});
+  }
+  function parseCsv(text){
+    var rows = [], row = [], cur = "", q = false;
+    for (var i = 0; i < text.length; i++){
+      var c = text[i];
+      if (q){
+        if (c === '"'){ if (text[i+1] === '"'){ cur += '"'; i++; } else q = false; }
+        else cur += c;
+      } else if (c === '"') q = true;
+      else if (c === ","){ row.push(cur); cur = ""; }
+      else if (c === "\n" || c === "\r"){
+        if (c === "\r" && text[i+1] === "\n") i++;
+        row.push(cur); rows.push(row); row = []; cur = "";
+      } else cur += c;
+    }
+    if (cur !== "" || row.length){ row.push(cur); rows.push(row); }
+    return rows.filter(function(r){ return r.some(function(v){ return v.trim() !== ""; }); });
+  }
+  function normDate(v){
+    var m = String(v).trim().match(/^(\d{4})[-\/.](\d{1,2})[-\/.](\d{1,2})$/);
+    return m ? fmtKey(+m[1], +m[2]-1, +m[3]) : null;
+  }
+  function isYes(v){ return /^(是|y|yes|v|1|true|✓)$/i.test(String(v).trim()); }
+  function importCsvText(text){
+    var rows = parseCsv(text.replace(/^﻿/, ""));
+    if (!rows.length) throw new Error("empty");
+    var head = rows[0].map(function(h){ return h.trim(); });
+    var col = {};
+    CSV_HEADER.forEach(function(h){ col[h] = head.indexOf(h); });
+    if (col["日期"] < 0) throw new Error("no date column");
+    function get(r, h){ return col[h] >= 0 && r[col[h]] != null ? String(r[col[h]]).trim() : ""; }
+    var count = 0;
+    rows.slice(1).forEach(function(r){
+      var dk = normDate(get(r, "日期"));
+      if (!dk) return;
+      var shift = get(r, "班別");
+      if (SHIFT_TYPES.indexOf(shift) < 0 || shift === derivedShiftType(dk)) shift = "";
+      var ot = parseFloat(get(r, "加班時數"));
+      if (isNaN(ot) || ot < 0) ot = 0;
+      var leave = get(r, "請假");
+      if (shift || ot || leave) STORE.entries[dk] = { shiftType: shift, otHours: ot, leaveType: leave };
+      else delete STORE.entries[dk];
+      if (isYes(get(r, "天災停班"))) STORE.disasters[dk] = true; else delete STORE.disasters[dk];
+      if (isYes(get(r, "休息日加班"))) STORE.compRest[dk] = true; else delete STORE.compRest[dk];
+      var hname = get(r, "假日名稱");
+      if (hname){
+        STORE.holidays[dk] = { name: hname, type: get(r, "假日類型") === "特殊節日" ? "特殊節日" : "國定假日", cny: isYes(get(r, "除夕初一初二")) };
+      }
+      count++;
+    });
+    return count;
+  }
+  function importJsonText(text){
+    var incoming = JSON.parse(text);
+    if (typeof incoming !== "object" || incoming === null) throw new Error("bad");
+    if (incoming.entries) Object.keys(incoming.entries).forEach(function(k){
+      if (/^\d{4}-\d{2}-\d{2}$/.test(k)) STORE.entries[k] = incoming.entries[k];
+    });
+    if (incoming.holidays) Object.keys(incoming.holidays).forEach(function(k){
+      if (/^\d{4}-\d{2}-\d{2}$/.test(k)) STORE.holidays[k] = incoming.holidays[k];
+    });
+    if (incoming.disasters) Object.keys(incoming.disasters).forEach(function(k){ STORE.disasters[k] = true; });
+    if (incoming.compRest) Object.keys(incoming.compRest).forEach(function(k){ STORE.compRest[k] = true; });
   }
   function fallbackDownload(blob, filename){
     var url = URL.createObjectURL(blob);
@@ -1087,7 +1264,7 @@
   }
   async function doExport(){
     var blob = buildExportBlob();
-    var filename = "輪班加班紀錄-備份.json";
+    var filename = "加班紀錄-" + fmtKey(today.getFullYear(), today.getMonth(), today.getDate()) + ".csv";
     try {
       if (typeof window.claude !== "undefined" && window.claude && window.claude.use){
         var downloads = await window.claude.use("downloads");
@@ -1100,29 +1277,27 @@
     } catch(e){
       if (e && e.code === "declined") return;
     }
-    try { fallbackDownload(blob, filename); showToast("已下載備份"); }
+    try { fallbackDownload(blob, filename); showToast("已下載 CSV"); }
     catch(e){ showToast("匯出失敗"); }
   }
+  // 匯入 CSV;舊的 JSON 備份也還能匯入
   function doImport(file){
     var reader = new FileReader();
     reader.onload = function(){
       try {
-        var incoming = JSON.parse(reader.result);
-        if (typeof incoming !== "object" || incoming === null) throw new Error("bad");
-        if (incoming.entries) Object.keys(incoming.entries).forEach(function(k){
-          if (/^\d{4}-\d{2}-\d{2}$/.test(k)) STORE.entries[k] = incoming.entries[k];
-        });
-        if (incoming.holidays) Object.keys(incoming.holidays).forEach(function(k){
-          if (/^\d{4}-\d{2}-\d{2}$/.test(k)) STORE.holidays[k] = incoming.holidays[k];
-        });
-        if (incoming.disasters) Object.keys(incoming.disasters).forEach(function(k){ STORE.disasters[k] = true; });
-        if (incoming.compRest) Object.keys(incoming.compRest).forEach(function(k){ STORE.compRest[k] = true; });
+        var text = String(reader.result);
+        if (/^\s*[\[{]/.test(text.replace(/^﻿/, ""))){
+          importJsonText(text);
+          showToast("匯入完成");
+        } else {
+          var n = importCsvText(text);
+          showToast("匯入完成,共 " + n + " 天");
+        }
         saveData();
         renderAll();
-        showToast("匯入完成");
       } catch(e){ showToast("檔案格式錯誤，匯入失敗"); }
     };
-    reader.readAsText(file);
+    reader.readAsText(file, "utf-8");
   }
 
   // ---------- wire up ----------
