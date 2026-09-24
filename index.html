@@ -50,7 +50,8 @@
   .wrap { max-width: 560px; margin: 0 auto; padding: 18px 14px 48px; }
 
   header.top { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 14px; gap: 6px; }
-  header.top h1 { font-size: 16px; font-weight: 600; margin: 0; letter-spacing: 0.2px; }
+  header.top h1 { font-size: 16px; font-weight: 600; margin: 0; letter-spacing: 0.2px; display: flex; align-items: center; gap: 6px; white-space: nowrap; }
+  .group-tag { font-family: var(--sans); font-size: 12px; font-weight: 700; color: #fff; background: var(--shift-day); border: none; border-radius: 999px; padding: 2px 8px; cursor: pointer; line-height: 1.5; }
   .icon-btn {
     background: none; border: none; color: var(--ink-soft); font-size: 12px;
     font-family: var(--sans); padding: 5px 6px; cursor: pointer; border-radius: 8px; white-space: nowrap;
@@ -150,7 +151,7 @@
   .cell .date-num { font-size: clamp(16px, 5.2vw, 24px); font-weight: 700; color: var(--cal-num); line-height: 1; flex-shrink: 0; margin-left: 1px; }
   .cell .date-num.hol { color: var(--cal-red); }
   .cell.blank .date-num { color: var(--cal-dim); }
-  .cell .adj-badge { position: absolute; top: 1px; left: 22%; font-size: clamp(8px, 2.5vw, 11px); font-weight: 600; line-height: 1.2; padding: 0 3px; border-radius: 3px; color: #000; background: #2BE32B; z-index: 2; white-space: nowrap; }
+  .cell .adj-badge { position: absolute; top: 1px; left: 0; font-size: clamp(8px, 2.5vw, 11px); font-weight: 600; line-height: 1.2; padding: 0 3px; border-radius: 3px; color: #000; background: #2BE32B; z-index: 2; white-space: nowrap; }
   .cell .shift-box { position: relative; flex: 1; margin-top: 2px; border: 1.5px solid var(--cal-box); border-radius: 6px; display: flex; flex-direction: column; justify-content: center; overflow: hidden; min-height: 0; }
   .cell .shift-box.pos-top { justify-content: flex-start; }
   .cell .shift-box.pos-bottom { justify-content: flex-end; }
@@ -160,9 +161,11 @@
   .cell .shift-label.small { font-size: clamp(10px, 3.2vw, 15px); padding: 0.4em 0; }
   .cell .shift-box.off .shift-label { color: var(--cal-red); background: none; }
   .cell .shift-box.leave .shift-label { background: var(--leave-bg); color: var(--leave-fg); font-size: clamp(12px, 4vw, 18px); font-weight: 600; }
+  .cell .note-mark { position: absolute; top: 0; right: 0; width: 0; height: 0; border-top: 12px solid #FF9500; border-left: 12px solid transparent; z-index: 3; }
   .cell .cell-mark { position: absolute; bottom: 1px; font-size: clamp(8px, 2.3vw, 10px); font-weight: 700; color: #fff; line-height: 1.3; padding: 0 2px; border-radius: 3px; z-index: 2; white-space: nowrap; }
   .cell .disaster-mark { left: 1px; background: var(--disaster); }
   .cell .comprest-mark { right: 1px; background: var(--comprest); }
+  .cell .comprest-mark.holiday-work { background: #7B3FC4; }
 
   .history { margin-top: 24px; }
   .history h3 { font-size: 12.5px; color: var(--ink-soft); font-weight: 600; margin: 0 0 8px; }
@@ -201,6 +204,8 @@
   .form-select { appearance: none; -webkit-appearance: none; font-family: var(--sans); font-size: 16px; padding-right: 32px; cursor: pointer;
     background-image: linear-gradient(45deg, transparent 50%, var(--ink-soft) 50%), linear-gradient(135deg, var(--ink-soft) 50%, transparent 50%);
     background-position: calc(100% - 17px) 50%, calc(100% - 12px) 50%; background-size: 5px 5px; background-repeat: no-repeat; }
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .note-input { font-family: var(--sans); font-size: 16px; }
   .sheet-title .wd { font-weight: 600; margin-left: 8px; }
   .preset-btn { font-family: var(--mono); font-size: 11.5px; padding: 5px 9px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface-2); color: var(--ink-soft); cursor: pointer; }
   .check-row { display: flex; align-items: center; gap: 8px; padding: 9px 0; font-size: 13px; }
@@ -229,7 +234,7 @@
 <div class="wrap">
 
   <header class="top">
-    <h1>加班計算器</h1>
+    <h1>加班計算器<button type="button" class="group-tag" id="groupTag" hidden></button></h1>
     <div class="btn-row">
       <button class="icon-btn" id="groupBtn">班別群組</button><button class="icon-btn" id="holBtn">假日</button><button class="icon-btn" id="importBtn">匯入</button><button class="icon-btn" id="exportBtn">匯出</button>
     </div>
@@ -294,11 +299,19 @@
         <div class="btn-grid" id="typeGrid"></div>
       </div>
 
-      <p class="field-label">加班時數（小時）</p>
-      <select class="form-input form-select" id="otInput"></select>
+      <div class="field-row">
+        <div>
+          <p class="field-label">加班時數（小時）</p>
+          <select class="form-input form-select" id="otInput"></select>
+        </div>
+        <div>
+          <p class="field-label">請假</p>
+          <select class="form-input form-select" id="leaveSelect"></select>
+        </div>
+      </div>
 
-      <p class="field-label">請假</p>
-      <select class="form-input form-select" id="leaveSelect"></select>
+      <p class="field-label">備註</p>
+      <input type="text" class="form-input note-input" id="noteInput" maxlength="100" placeholder="選填">
 
       <p class="field-label">特殊標記</p>
       <div class="btn-grid" style="grid-template-columns:1fr 1fr" id="flagGrid">
@@ -327,7 +340,7 @@
     <div class="sheet-body">
       <div id="groupList"></div>
       <p class="field-label" style="margin-top:18px">說明</p>
-      <div class="hol-info">中16A／B／C／D班採 8 天循環（白班白班小夜小夜小休大夜大夜大休），中21AD／BC班採 16 天循環（含 08~20、12~24 兩種 12 小時班），選了之後班別會自動排好。如果都不是，選「其他／手動輸入」，自己每天手動點選班別就可以了。</div>
+      <div class="hol-info">中16A／B／C／D班採 8 天循環（白班白班小夜小夜小休大夜大夜大休），中21AD／BC班採 16 天循環（含 08~20、12~24 兩種 12 小時班），常日班為週一到週五 08:00–17:00、週末與國定假日放假。選了之後班別會自動排好。如果都不是，選「其他／手動輸入」，自己每天手動點選班別就可以了。</div>
     </div>
   </div>
 </div>
@@ -367,8 +380,8 @@
   var V1_KEY = "shiftOvertimeData_public_v1_legacy";
   var V2_KEY = "shiftOvertimeData_public_v2";
   var WEEKDAY_NAMES = ["日","一","二","三","四","五","六"];
-  var SHIFT_TYPES = ["白班","小夜","大夜","08~20","12~24","大休","小休"];
-  var LEAVE_TYPES = ["特休","身心","補休","公假","事假","病假","例假"];
+  var SHIFT_TYPES = ["白班","小夜","大夜","08~20","12~24","常日","大休","小休","休假"];
+  var LEAVE_TYPES = ["特休","身心","補休","公假","事假","病假","例假","其他"];
   var OT_OPTIONS = [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4];
   var RATE = { otNormal: 1.33, otOver: 1.66 };
 
@@ -378,10 +391,12 @@
     "大夜": { fg:"#fff", bg:"var(--shift-night)" },
     "08~20": { fg:"#3A3000", bg:"#E8C500" },
     "12~24": { fg:"#fff", bg:"#2F6B3F" },
+    "常日": { fg:"#fff", bg:"var(--shift-day)" },
+    "休假": { fg:"var(--shift-off)", bg:"var(--shift-off-bg)", border:"2px solid var(--shift-off)" },
     "大休": { fg:"var(--shift-off)", bg:"var(--shift-off-bg)", border:"2px solid var(--shift-off)" },
     "小休": { fg:"var(--shift-off)", bg:"var(--shift-off-bg)", border:"1.5px dashed var(--shift-off)" }
   };
-  var SHIFT_HOURS = { "白班":8, "小夜":8, "大夜":8, "08~20":12, "12~24":12 };
+  var SHIFT_HOURS = { "白班":8, "小夜":8, "大夜":8, "08~20":12, "12~24":12, "常日":8 };
 
   var CATEGORIES = [
     { key:"handover",     label:"交接班",                 rate:1 },
@@ -431,11 +446,12 @@
     "中16D班": { cycle: CYCLE_8, anchor: "2026-07-04" },
     "中21AD班": { cycle: CYCLE_21AD, anchor: "2026-09-01" },
     "中21BC班": { cycle: CYCLE_21BC, anchor: "2026-09-01" },
+    "常日班": { weekday: true },
     "其他／手動輸入": null
   };
   var GROUP_LIST = Object.keys(GROUP_CYCLES);
 
-  var STORE = { entries:{}, holidays:{}, disasters:{}, compRest:{}, group:"" };
+  var STORE = { entries:{}, holidays:{}, disasters:{}, compRest:{}, holidayWork:{}, group:"" };
   var today = new Date();
   var todayKey = fmtKey(today.getFullYear(), today.getMonth(), today.getDate());
   var curPeriod = getCurrentPeriodKey();
@@ -462,20 +478,21 @@
         if (!STORE.holidays) STORE.holidays = JSON.parse(JSON.stringify(HOLIDAYS_DEFAULT));
         if (!STORE.disasters) STORE.disasters = {};
         if (!STORE.compRest) STORE.compRest = {};
+        if (!STORE.holidayWork) STORE.holidayWork = {};
         if (!STORE.group) STORE.group = "";
         return;
       }
       var v1raw = localStorage.getItem(V1_KEY);
       if (v1raw){
         var v1 = JSON.parse(v1raw);
-        STORE = { entries: migrateV1ToEntries(v1), holidays: JSON.parse(JSON.stringify(HOLIDAYS_DEFAULT)), disasters:{}, compRest:{}, group:"" };
+        STORE = { entries: migrateV1ToEntries(v1), holidays: JSON.parse(JSON.stringify(HOLIDAYS_DEFAULT)), disasters:{}, compRest:{}, holidayWork:{}, group:"" };
         saveData();
         return;
       }
-      STORE = { entries: migrateV1ToEntries(PRESET_V1), holidays: JSON.parse(JSON.stringify(HOLIDAYS_DEFAULT)), disasters:{}, compRest:{}, group:"" };
+      STORE = { entries: migrateV1ToEntries(PRESET_V1), holidays: JSON.parse(JSON.stringify(HOLIDAYS_DEFAULT)), disasters:{}, compRest:{}, holidayWork:{}, group:"" };
       saveData();
     } catch(e){
-      STORE = { entries: migrateV1ToEntries(PRESET_V1), holidays: JSON.parse(JSON.stringify(HOLIDAYS_DEFAULT)), disasters:{}, compRest:{}, group:"" };
+      STORE = { entries: migrateV1ToEntries(PRESET_V1), holidays: JSON.parse(JSON.stringify(HOLIDAYS_DEFAULT)), disasters:{}, compRest:{}, holidayWork:{}, group:"" };
     }
   }
   function saveData(){
@@ -499,9 +516,19 @@
     for (var d=1; d<=n; d++) dates.push(fmtKey(y,m,d));
     return dates;
   }
+  // 常日班沒有休息日加班,同一顆按鈕改成「假日出勤」,存在 holidayWork
+  function isWeekdayGroup(){ return !!(GROUP_CYCLES[STORE.group] && GROUP_CYCLES[STORE.group].weekday); }
+  function flagMap(){ return isWeekdayGroup() ? STORE.holidayWork : STORE.compRest; }
   function groupCyclePos(dateKey){
     var gc = GROUP_CYCLES[STORE.group];
     if (!gc) return null;
+    if (gc.weekday){
+      // 常日班 08:00-17:00:週一到週五上班,週末與假日行事曆上的日子放假,沒有交接班
+      var wp = parseKey(dateKey);
+      var dow = new Date(wp.y, wp.m, wp.d).getDay();
+      var off = dow === 0 || dow === 6 || !!STORE.holidays[dateKey];
+      return { shift: off && !STORE.holidayWork[dateKey] ? "休假" : "常日", noHandover: true };
+    }
     var a = parseKey(gc.anchor);
     var anchorDate = new Date(a.y, a.m, a.d);
     var p = parseKey(dateKey);
@@ -564,7 +591,7 @@
       if (disasters[dateKey]) h += 7.75;
       return h;
     }
-    if (shiftType === "白班" || shiftType === "小夜" || shiftType === "08~20" || shiftType === "12~24"){
+    if (shiftType === "白班" || shiftType === "小夜" || shiftType === "08~20" || shiftType === "12~24" || shiftType === "常日"){
       return disasters[dateKey] ? shiftHours : 0;
     }
     return 0;
@@ -576,12 +603,12 @@
     var shift = entry.shiftType || derivedShiftType(dateKey);
     var ot = entry.otHours || 0;
     var leave = entry.leaveType || "";
-    var isWorkShift = (shift === "白班" || shift === "小夜" || shift === "大夜" || shift === "08~20" || shift === "12~24");
+    var isWorkShift = (shift === "白班" || shift === "小夜" || shift === "大夜" || shift === "08~20" || shift === "12~24" || shift === "常日");
     var worked = isWorkShift && !leave;
 
     if (worked){
-      var noHandover = entry.shiftType ? false : derivedNoHandover(dateKey);
-      var isCompRest = !!STORE.compRest[dateKey];
+      var noHandover = shift === "常日" || (entry.shiftType ? false : derivedNoHandover(dateKey));
+      var isCompRest = !isWeekdayGroup() && !!STORE.compRest[dateKey];
       if (isCompRest){
         result.compRestOT += 8;
         if (!noHandover){ if (ot < 4) result.compRestOT += 0.5; else result.manualReport += 0.5; }
@@ -641,7 +668,14 @@
   }
 
   // ---------- render ----------
+  function renderGroupTag(){
+    var tag = document.getElementById("groupTag");
+    if (!STORE.group){ tag.hidden = true; return; }
+    tag.hidden = false;
+    tag.textContent = GROUP_CYCLES[STORE.group] ? STORE.group : "手動輸入";
+  }
   function renderAll(){
+    renderGroupTag();
     var lbl = periodLabel(curPeriod);
     document.getElementById("periodLabel").textContent = lbl.main;
     document.getElementById("periodSub").textContent = lbl.sub;
@@ -780,7 +814,7 @@
     } catch(e){ return ""; }
   }
   // 班別色塊在框內的位置:早班置中、大夜靠上、晚班靠下
-  var SHIFT_POS = { "白班":"", "08~20":"", "大夜":"pos-top", "小夜":"pos-bottom", "12~24":"pos-bottom" };
+  var SHIFT_POS = { "常日":"", "白班":"", "08~20":"", "大夜":"pos-top", "小夜":"pos-bottom", "12~24":"pos-bottom" };
   function shortHolidayName(name){
     return name.replace(/紀念日$/, "").replace(/^春節/, "");
   }
@@ -849,7 +883,7 @@
         var effShift = effectiveShiftType(dk);
         if (effShift && SHIFT_META[effShift]){
           var meta = SHIFT_META[effShift];
-          var isOff = effShift === "大休" || effShift === "小休";
+          var isOff = effShift === "大休" || effShift === "小休" || effShift === "休假";
           box = document.createElement("div");
           box.className = "shift-box" + (isOff ? " off" : "") + (SHIFT_POS[effShift] ? " " + SHIFT_POS[effShift] : "");
           var lab = document.createElement("div");
@@ -859,7 +893,9 @@
           box.appendChild(lab);
         }
       }
-      if (!box && (isDisaster || STORE.compRest[dk])){
+      var hasNote = !!(entry && entry.note);
+      var flagOn = !!flagMap()[dk];
+      if (!box && (isDisaster || flagOn || hasNote)){
         box = document.createElement("div");
         box.className = "shift-box";
         box.style.borderColor = "transparent";
@@ -871,11 +907,17 @@
           dmark.textContent = "停班";
           box.appendChild(dmark);
         }
-        if (STORE.compRest[dk]){
+        if (flagOn){
           var cmark = document.createElement("span");
-          cmark.className = "cell-mark comprest-mark";
-          cmark.textContent = "休加";
+          cmark.className = "cell-mark comprest-mark" + (isWeekdayGroup() ? " holiday-work" : "");
+          cmark.textContent = isWeekdayGroup() ? "出勤" : "休加";
           box.appendChild(cmark);
+        }
+        if (hasNote){
+          var nmark = document.createElement("span");
+          nmark.className = "note-mark";
+          box.appendChild(nmark);
+          cell.title = entry.note;
         }
         cell.appendChild(box);
       }
@@ -894,8 +936,9 @@
     var backupEntry = STORE.entries[editingKey];
     var hadDisaster = Object.prototype.hasOwnProperty.call(STORE.disasters, editingKey);
     var backupDisaster = STORE.disasters[editingKey];
-    var hadCompRest = Object.prototype.hasOwnProperty.call(STORE.compRest, editingKey);
-    var backupCompRest = STORE.compRest[editingKey];
+    var fmap = flagMap();
+    var hadCompRest = Object.prototype.hasOwnProperty.call(fmap, editingKey);
+    var backupCompRest = fmap[editingKey];
 
     STORE.entries[editingKey] = {
       shiftType: pendingType,
@@ -903,13 +946,13 @@
       leaveType: pendingLeave
     };
     if (pendingDisaster) STORE.disasters[editingKey] = true; else delete STORE.disasters[editingKey];
-    if (pendingCompRest) STORE.compRest[editingKey] = true; else delete STORE.compRest[editingKey];
+    if (pendingCompRest) fmap[editingKey] = true; else delete fmap[editingKey];
 
     var r = computeDay(editingKey);
 
     STORE.entries[editingKey] = backupEntry;
     if (hadDisaster) STORE.disasters[editingKey] = backupDisaster; else delete STORE.disasters[editingKey];
-    if (hadCompRest) STORE.compRest[editingKey] = backupCompRest; else delete STORE.compRest[editingKey];
+    if (hadCompRest) fmap[editingKey] = backupCompRest; else delete fmap[editingKey];
 
     return r;
   }
@@ -986,9 +1029,11 @@
       leaveSel.appendChild(o);
     });
     leaveSel.value = pendingLeave;
+    document.getElementById("noteInput").value = entry.note || "";
 
     pendingDisaster = !!STORE.disasters[key];
-    pendingCompRest = !!STORE.compRest[key];
+    pendingCompRest = !!flagMap()[key];
+    document.getElementById("compRestBtn").textContent = isWeekdayGroup() ? "假日出勤" : "休息日加班";
     updateFlagBtns();
 
     updateHolInfo();
@@ -1013,7 +1058,7 @@
   document.getElementById("compRestBtn").addEventListener("click", function(){
     pendingCompRest = !pendingCompRest;
     updateFlagBtns();
-    if (pendingCompRest) STORE.compRest[editingKey] = true; else delete STORE.compRest[editingKey];
+    if (pendingCompRest) flagMap()[editingKey] = true; else delete flagMap()[editingKey];
     saveData();
     renderPreview();
     renderCalendar();
@@ -1044,13 +1089,15 @@
     if (!editingKey) return;
     var otVal = parseFloat(document.getElementById("otInput").value);
     if (isNaN(otVal)) otVal = 0;
-    if (!pendingType && !pendingLeave && otVal === 0){
+    var note = document.getElementById("noteInput").value.trim();
+    if (!pendingType && !pendingLeave && otVal === 0 && !note){
       delete STORE.entries[editingKey];
     } else {
       STORE.entries[editingKey] = { shiftType: pendingType, otHours: otVal, leaveType: pendingLeave };
+      if (note) STORE.entries[editingKey].note = note;
     }
     if (pendingDisaster) STORE.disasters[editingKey] = true; else delete STORE.disasters[editingKey];
-    if (pendingCompRest) STORE.compRest[editingKey] = true; else delete STORE.compRest[editingKey];
+    if (pendingCompRest) flagMap()[editingKey] = true; else delete flagMap()[editingKey];
 
     saveData();
     closeEditor();
@@ -1132,14 +1179,14 @@
 
   // ---------- export / import ----------
   // CSV 一天一列;班別欄匯出的是當天實際班別,匯入時跟自動排班相同就不另存
-  var CSV_HEADER = ["日期","星期","班別","加班時數","請假","天災停班","休息日加班","假日名稱","假日類型","除夕初一初二"];
+  var CSV_HEADER = ["日期","星期","班別","加班時數","請假","天災停班","休息日加班","假日名稱","假日類型","除夕初一初二","備註","假日出勤"];
   function csvCell(v){
     v = v == null ? "" : String(v);
     return /[",\r\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v;
   }
   function buildExportBlob(){
     var keys = {};
-    [STORE.entries, STORE.disasters, STORE.compRest, STORE.holidays].forEach(function(obj){
+    [STORE.entries, STORE.disasters, STORE.compRest, STORE.holidayWork, STORE.holidays].forEach(function(obj){
       Object.keys(obj || {}).forEach(function(k){ if (/^\d{4}-\d{2}-\d{2}$/.test(k)) keys[k] = true; });
     });
     var rows = [CSV_HEADER];
@@ -1157,7 +1204,9 @@
         STORE.compRest[dk] ? "是" : "",
         hol ? hol.name : "",
         hol ? hol.type : "",
-        hol && hol.cny ? "是" : ""
+        hol && hol.cny ? "是" : "",
+        e.note || "",
+        STORE.holidayWork[dk] ? "是" : ""
       ]);
     });
     var text = "﻿" + rows.map(function(r){ return r.map(csvCell).join(","); }).join("\r\n") + "\r\n";
@@ -1202,10 +1251,14 @@
       var ot = parseFloat(get(r, "加班時數"));
       if (isNaN(ot) || ot < 0) ot = 0;
       var leave = get(r, "請假");
-      if (shift || ot || leave) STORE.entries[dk] = { shiftType: shift, otHours: ot, leaveType: leave };
-      else delete STORE.entries[dk];
+      var note = get(r, "備註");
+      if (shift || ot || leave || note){
+        STORE.entries[dk] = { shiftType: shift, otHours: ot, leaveType: leave };
+        if (note) STORE.entries[dk].note = note;
+      } else delete STORE.entries[dk];
       if (isYes(get(r, "天災停班"))) STORE.disasters[dk] = true; else delete STORE.disasters[dk];
       if (isYes(get(r, "休息日加班"))) STORE.compRest[dk] = true; else delete STORE.compRest[dk];
+      if (isYes(get(r, "假日出勤"))) STORE.holidayWork[dk] = true; else delete STORE.holidayWork[dk];
       var hname = get(r, "假日名稱");
       if (hname){
         STORE.holidays[dk] = { name: hname, type: get(r, "假日類型") === "特殊節日" ? "特殊節日" : "國定假日", cny: isYes(get(r, "除夕初一初二")) };
@@ -1225,6 +1278,7 @@
     });
     if (incoming.disasters) Object.keys(incoming.disasters).forEach(function(k){ STORE.disasters[k] = true; });
     if (incoming.compRest) Object.keys(incoming.compRest).forEach(function(k){ STORE.compRest[k] = true; });
+    if (incoming.holidayWork) Object.keys(incoming.holidayWork).forEach(function(k){ STORE.holidayWork[k] = true; });
   }
   function fallbackDownload(blob, filename){
     var url = URL.createObjectURL(blob);
@@ -1349,6 +1403,9 @@
       el.appendChild(row);
     });
   }
+  document.getElementById("groupTag").addEventListener("click", function(){
+    document.getElementById("groupBtn").click();
+  });
   document.getElementById("groupBtn").addEventListener("click", function(){
     renderGroupList();
     document.getElementById("groupOverlay").classList.add("open");
