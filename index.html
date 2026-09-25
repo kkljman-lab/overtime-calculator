@@ -368,7 +368,7 @@
     </div>
     <div class="sheet-body">
       <div class="help-item"><div class="hi-head"><b>交接班</b><span class="hi-hr">0.5 hr</span></div>
-        <p>輪班人員與上、下班人員的交接時數。常日班沒有；中21 班部分日子沒有。</p></div>
+        <p>輪班人員與上、下班人員的交接時數。中21 班有交接的日子算 0.25 hr，部分日子沒有；常日班沒有。</p></div>
       <div class="help-item"><div class="hi-head"><b>平日加班</b><span class="hi-hr">前 2 hr</span></div>
         <p>當天加班時數的前 2 小時。</p></div>
       <div class="help-item"><div class="hi-head"><b>超時加班</b><span class="hi-hr">超過 2 hr</span></div>
@@ -384,7 +384,7 @@
       <div class="help-item"><div class="hi-head"><b>特休補休（除夕初一初二）</b><span class="hi-hr">8 hr</span></div>
         <p>除夕、初一、初二請特休或例假，會給一天補休加班。</p></div>
       <div class="help-item hi-sep"><div class="hi-head"><b>手寫另報</b><span class="hi-hr">0.5 hr</span></div>
-        <p>當天加班滿 4 hr 時，交接班的 0.5 hr 改列這裡（系統單日最多報 12 hr）。<strong>不算進合計。</strong></p></div>
+        <p>當天加班滿 4 hr 時，交接班時數改列這裡（系統單日最多報 12 hr）。中21 班這天沒有交接班，也不列這裡。<strong>不算進合計。</strong></p></div>
       <div class="help-note">請假的那天沒有國定加班、獎工時數、天災出勤加班。</div>
     </div>
   </div>
@@ -728,11 +728,16 @@
     if (worked){
       var noHandover = shift === "常日" || (entry.shiftType ? false : derivedNoHandover(dateKey));
       var isCompRest = !isWeekdayGroup() && !!STORE.compRest[dateKey];
+      // 中21 班有交接的日子算 0.25hr,其他班 0.5hr
+      var is21 = /^中21/.test(STORE.group);
+      var hv = is21 ? 0.25 : 0.5;
+      // 中21 當天加班滿 4hr 就沒有交接班,也不列手寫另報
+      if (is21 && ot >= 4) noHandover = true;
       if (isCompRest){
         result.compRestOT += 8;
-        if (!noHandover){ if (ot < 4) result.compRestOT += 0.5; else result.manualReport += 0.5; }
+        if (!noHandover){ if (ot < 4) result.compRestOT += hv; else result.manualReport += hv; }
       } else {
-        if (!noHandover){ if (ot < 4) result.handover += 0.5; else result.manualReport += 0.5; }
+        if (!noHandover){ if (ot < 4) result.handover += hv; else result.manualReport += hv; }
       }
       result.otNormal += Math.min(2, ot);
       result.otOver += Math.max(0, ot - 2);
@@ -1144,7 +1149,7 @@
     var dLabel = STORE.disasters[editingKey] ? "天災停班" : "前一天天災停班";
     if (dHrs > 0) lines.push(dLabel + "，加" + dHrs + (bonusShown ? "（獎工已含）" : "獎8"));
     else if (STORE.disasters[editingKey]) lines.push("天災停班");
-    if (rotation && STORE.compRest[editingKey]) lines.push(worked ? "休息日加班，" + (derivedNoHandover(editingKey) ? "8" : "8.5") : "休息日加班");
+    if (rotation && STORE.compRest[editingKey]) lines.push(worked ? "休息日加班，" + (derivedNoHandover(editingKey) ? "8" : /^中21/.test(STORE.group) ? "8.25" : "8.5") : "休息日加班");
     box.style.display = lines.length ? "block" : "none";
     box.textContent = lines.join("\n");
   }
