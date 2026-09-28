@@ -49,11 +49,28 @@
   }
   .wrap { max-width: 560px; margin: 0 auto; padding: 18px 14px 48px; }
 
-  header.top { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 14px; gap: 6px; }
+  header.top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; gap: 6px; }
   header.top h1 { font-size: 16px; font-weight: 600; margin: 0; letter-spacing: 0.2px; display: flex; align-items: center; gap: 6px; white-space: nowrap; }
   .hol-row.group-row { cursor: pointer; font-size: 17px; padding: 14px 14px; }
   .group-sub { color: var(--ink-faint); font-size: 13px; }
-  .help-btn { width: 24px; height: 24px; border-radius: 50%; border: 1.5px solid var(--ink-soft); background: none; color: var(--ink-soft); font-family: var(--sans); font-size: 14px; font-weight: 700; line-height: 1; padding: 0; cursor: pointer; flex-shrink: 0; }
+  .menu-btn { width: 34px; height: 34px; margin-left: -6px; border: none; background: none; border-radius: 9px; padding: 5px; cursor: pointer; color: var(--ink); flex-shrink: 0; }
+  .menu-btn:active { background: var(--surface-2); }
+  .menu-btn svg, .mi-icon svg { width: 100%; height: 100%; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .drawer-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.35); z-index: 60; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
+  .drawer-overlay.open { opacity: 1; pointer-events: auto; }
+  .drawer { position: absolute; top: 0; bottom: 0; left: 0; width: min(300px, 84vw); background: var(--surface); overflow-y: auto; padding: calc(10px + env(safe-area-inset-top, 0px)) 12px 20px; transform: translateX(-100%); transition: transform 0.22s ease; box-shadow: 4px 0 18px rgba(0,0,0,0.18); }
+  .drawer-overlay.open .drawer { transform: none; }
+  .drawer-head { display: flex; justify-content: space-between; align-items: center; padding: 4px 4px 8px; font-size: 17px; }
+  .menu-sec { padding: 6px 0; border-top: 1px solid var(--border); }
+  .menu-sec-title { margin: 6px 6px 4px; font-size: 12px; font-weight: 600; color: var(--ink-faint); letter-spacing: 0.5px; }
+  .menu-item { display: flex; align-items: center; gap: 12px; width: 100%; padding: 10px 8px; border: none; background: none; border-radius: 10px; text-align: left; cursor: pointer; font-family: var(--sans); color: var(--ink); }
+  .menu-item:active { background: var(--surface-2); }
+  .mi-icon { width: 34px; height: 34px; padding: 6px; border-radius: 9px; background: var(--accent-soft); color: var(--accent); flex-shrink: 0; }
+  .mi-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .mi-text b { font-size: 15px; font-weight: 600; }
+  .mi-text small { font-size: 12px; color: var(--ink-faint); }
+  .menu-item.danger { color: var(--leave); }
+  .menu-item.danger .mi-icon { background: #FBEAE8; color: var(--leave); }
   .help-item { padding: 11px 0; border-bottom: 1px solid var(--border); }
   .help-item.hi-sep { border-top: 1.5px solid var(--ink-faint); margin-top: 6px; }
   .hi-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; font-size: 15px; }
@@ -62,12 +79,6 @@
   .help-item p strong { color: var(--ink); }
   .help-note { margin: 12px 0 4px; padding: 10px 12px; background: var(--surface-2); border-radius: 10px; font-size: 13px; color: var(--ink-soft); }
   .group-tag { font-family: var(--sans); font-size: 12px; font-weight: 700; color: #fff; background: var(--shift-day); border: none; border-radius: 999px; padding: 2px 8px; cursor: pointer; line-height: 1.5; }
-  .icon-btn {
-    background: none; border: none; color: var(--ink-soft); font-size: 12px;
-    font-family: var(--sans); padding: 5px 6px; cursor: pointer; border-radius: 8px; white-space: nowrap;
-  }
-  .icon-btn:active { background: var(--surface-2); }
-  .btn-row { display: flex; gap: 2px; }
 
   .hero {
     background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
@@ -161,12 +172,12 @@
   }
   .grid > .cell:nth-child(7n+1):not(.blank), .grid > .cell:nth-child(7n):not(.blank) { background: var(--cal-weekend); }
   .cell.blank { cursor: default; }
-  .cell.today { box-shadow: inset 0 0 0 2px var(--accent); }
-  .cell.disaster-day { box-shadow: inset 0 0 0 2px var(--disaster); }
+  /* 今天:像用紅筆圈起來的橢圓 */
+  .cell.today::after { content: ""; position: absolute; left: 4%; right: 4%; top: 12%; bottom: 2%; border: 3.5px solid rgba(190, 25, 40, 0.8); border-radius: 50%; transform: rotate(-8deg); box-shadow: 0 1px 2px rgba(120, 0, 0, 0.35); pointer-events: none; z-index: 4; }
   .cell .cell-top { position: relative; display: flex; align-items: flex-end; justify-content: space-between; height: clamp(20px, 5.8vw, 30px); flex-shrink: 0; }
   .cell .lunar { font-size: clamp(8px, 2.4vw, 11px); color: var(--cal-small); white-space: nowrap; overflow: hidden; line-height: 1.1; padding-bottom: 2px; min-width: 0; }
   .cell .lunar.hol-national { color: var(--cal-red); font-weight: 600; }
-  .cell .lunar.hol-special { color: var(--holiday-special); font-weight: 700; }
+  .cell .lunar.hol-special { color: var(--cal-red); font-weight: 600; }
   .cell .date-num { font-size: clamp(16px, 5.2vw, 24px); font-weight: 700; color: var(--cal-num); line-height: 1; flex-shrink: 0; margin-left: 1px; }
   .cell .date-num.hol { color: var(--cal-red); }
   .cell.blank .date-num { color: var(--cal-dim); }
@@ -192,7 +203,6 @@
   .history-empty { font-size: 12.5px; color: var(--ink-faint); padding: 10px 2px; }
 
   footer.note { text-align: center; font-size: 10.5px; color: var(--ink-faint); margin-top: 26px; line-height: 1.7; }
-  footer.note button { background: none; border: none; color: var(--ink-soft); text-decoration: underline; font-size: 10.5px; cursor: pointer; padding: 0; font-family: var(--sans); }
 
   .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); display: none; align-items: flex-end; z-index: 50; }
   .overlay.open { display: flex; }
@@ -275,10 +285,7 @@
 <div class="wrap">
 
   <header class="top">
-    <h1><button type="button" class="help-btn" id="helpBtn" aria-label="計算說明">?</button>加班計算器<button type="button" class="group-tag" id="groupTag" hidden></button></h1>
-    <div class="btn-row">
-      <button class="icon-btn" id="holBtn">特殊日</button><button class="icon-btn" id="importBtn">匯入</button><button class="icon-btn" id="exportBtn">匯出</button>
-    </div>
+    <h1><button type="button" class="menu-btn" id="menuBtn" aria-label="功能表"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>加班計算器<button type="button" class="group-tag" id="groupTag" hidden></button></h1>
   </header>
 
   <div class="year-banner" id="yearBanner" hidden>
@@ -340,8 +347,7 @@
   </div>
 
   <footer class="note">
-    資料儲存在這個瀏覽器裡，清除瀏覽器資料會遺失，建議定期按「匯出」備份。<br>
-    <button id="resetBtn">清空所有資料</button>
+    資料儲存在這個瀏覽器裡，清除瀏覽器資料會遺失，建議定期從左上功能表「匯出 CSV」備份。
   </footer>
 </div>
 
@@ -358,6 +364,33 @@
       <div id="groupList"></div>
     </div>
   </div>
+</div>
+
+<div class="drawer-overlay" id="menuOverlay">
+  <nav class="drawer" id="menuDrawer" aria-label="功能表">
+    <div class="drawer-head"><b>加班計算器</b><button type="button" class="close-x" id="menuCloseBtn" aria-label="關閉">×</button></div>
+    <div class="menu-sec">
+      <p class="menu-sec-title">行事曆</p>
+      <button type="button" class="menu-item" id="holBtn"><span class="mi-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg></span><span class="mi-text"><b>特殊日</b><small>休息日加班・天災停班・國定假日</small></span></button>
+      <button type="button" class="menu-item" id="govMenuBtn"><span class="mi-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h16M6 20V10M10 20V10M14 20V10M18 20V10M3 10l9-6 9 6z"/></svg></span><span class="mi-text"><b>匯入政府行事曆</b><small>自動抓取國定假日與補假</small></span></button>
+    </div>
+    <div class="menu-sec">
+      <p class="menu-sec-title">班別</p>
+      <button type="button" class="menu-item" id="groupMenuBtn"><span class="mi-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 19c.6-3.2 2.8-5 5.5-5s4.9 1.8 5.5 5"/><path d="M16 5.5a3 3 0 010 5.6M18 14.5c1.4.8 2.3 2.4 2.6 4.5"/></svg></span><span class="mi-text"><b>切換班別群組</b></span></button>
+    </div>
+    <div class="menu-sec">
+      <p class="menu-sec-title">資料備份</p>
+      <button type="button" class="menu-item" id="exportBtn"><span class="mi-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V4M8 8l4-4 4 4"/><path d="M4 14v4a2 2 0 002 2h12a2 2 0 002-2v-4"/></svg></span><span class="mi-text"><b>匯出 CSV</b><small>目前班別的資料，可用 Excel 開啟</small></span></button>
+      <button type="button" class="menu-item" id="importBtn"><span class="mi-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11M8 11l4 4 4-4"/><path d="M4 14v4a2 2 0 002 2h12a2 2 0 002-2v-4"/></svg></span><span class="mi-text"><b>匯入 CSV</b><small>讀回備份，存進目前班別</small></span></button>
+    </div>
+    <div class="menu-sec">
+      <p class="menu-sec-title">說明</p>
+      <button type="button" class="menu-item" id="helpBtn"><span class="mi-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M9.6 9.5a2.5 2.5 0 114 2c-.9.6-1.6 1.1-1.6 2.2M12 16.8v.2"/></svg></span><span class="mi-text"><b>加班時數怎麼算</b><small>各類加班的計算規則</small></span></button>
+    </div>
+    <div class="menu-sec">
+      <button type="button" class="menu-item danger" id="resetMenuBtn"><span class="mi-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9.5 7V4.5h5V7M6.5 7l1 13h9l1-13"/></svg></span><span class="mi-text"><b>清空所有資料</b></span></button>
+    </div>
+  </nav>
 </div>
 
 <div class="overlay" id="helpOverlay">
@@ -908,11 +941,15 @@
     if (!LUNAR_FMT || !LUNAR_FMT.formatToParts) return "";
     try {
       var parts = LUNAR_FMT.formatToParts(new Date(y, m, d));
-      var mon = "", day = 0;
+      var mon = "", day = 0, dayText = "";
       parts.forEach(function(pt){
         if (pt.type === "month") mon = pt.value;
-        if (pt.type === "day") day = parseInt(pt.value, 10);
+        if (pt.type === "day"){ dayText = pt.value; day = parseInt(pt.value, 10); }
       });
+      // 有些瀏覽器(iPhone Safari)直接給中文日期,例如「初一」
+      if (!day && /^(初|十|廿|二十|三十)/.test(dayText)){
+        return dayText === "初一" ? mon.replace("十一月","冬月").replace("十二月","臘月").replace("一月","正月") : dayText;
+      }
       if (!day) return "";
       if (day === 1) return mon.replace("十一月","冬月").replace("十二月","臘月").replace("一月","正月");
       if (day <= 10) return "初" + LUNAR_DIGITS[day];
@@ -942,7 +979,8 @@
       small.textContent = lunarLabel(p.y, p.m, p.d);
     }
     var num = document.createElement("span");
-    num.className = "date-num" + (hol ? " hol" : "");
+    var dow = new Date(p.y, p.m, p.d).getDay();
+    num.className = "date-num" + (hol || dow === 0 || dow === 6 ? " hol" : "");
     num.textContent = p.d;
     top.appendChild(small);
     top.appendChild(num);
@@ -1409,6 +1447,7 @@
   }
   document.getElementById("govYear").addEventListener("change", function(){ loadGovYear(+this.value); });
   document.getElementById("govOpenBtn").addEventListener("click", function(){ openGovImport(); });
+  document.getElementById("govMenuBtn").addEventListener("click", function(){ openGovImport(); });
   function closeGov(){ document.getElementById("govOverlay").classList.remove("open"); }
   document.getElementById("govCloseXBtn").addEventListener("click", closeGov);
   document.getElementById("govCancelBtn").addEventListener("click", closeGov);
@@ -1645,7 +1684,7 @@
     if (e.target.files && e.target.files[0]) doImport(e.target.files[0]);
     e.target.value = "";
   });
-  document.getElementById("resetBtn").addEventListener("click", function(){
+  document.getElementById("resetMenuBtn").addEventListener("click", function(){
     if (confirm("確定要清空所有已儲存的資料嗎？這個動作無法復原。")){
       try { localStorage.removeItem(V2_KEY); } catch(e){}
       loadData();
@@ -1672,6 +1711,16 @@
       el.appendChild(row);
     });
   }
+  // 左上功能表:點任何一項先關掉選單,再執行該項功能
+  function closeMenu(){ document.getElementById("menuOverlay").classList.remove("open"); }
+  document.getElementById("menuBtn").addEventListener("click", function(){
+    document.getElementById("menuOverlay").classList.add("open");
+  });
+  document.getElementById("menuCloseBtn").addEventListener("click", closeMenu);
+  document.getElementById("menuOverlay").addEventListener("click", function(e){
+    if (e.target === this || e.target.closest(".menu-item")) closeMenu();
+  });
+  document.getElementById("groupMenuBtn").addEventListener("click", function(){ document.getElementById("groupTag").click(); });
   document.getElementById("helpBtn").addEventListener("click", function(){
     document.getElementById("helpOverlay").classList.add("open");
   });
