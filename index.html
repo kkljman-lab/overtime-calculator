@@ -136,20 +136,18 @@
   .cat-detail-list { display: flex; flex-direction: column; gap: 4px; background: var(--surface-2); border-radius: 8px; padding: 8px 10px; }
   .cat-detail-item { display: flex; justify-content: space-between; font-size: 11.5px; font-family: var(--mono); color: var(--ink-soft); }
 
-  .period-nav { display: flex; align-items: center; justify-content: space-between; margin: 18px 0 8px; }
+  .period-nav { display: flex; align-items: center; justify-content: space-between; margin: 4px 0 8px; }
   .period-nav button { background: var(--surface); border: 1px solid var(--border); color: var(--ink); width: 32px; height: 32px; border-radius: 10px; font-size: 16px; cursor: pointer; }
   .period-nav button:active { background: var(--surface-2); }
   .period-nav .plabel { text-align: center; }
   .period-nav h2 { font-size: 15px; font-weight: 600; margin: 0; }
   .period-nav .psub { font-size: 11px; color: var(--ink-faint); font-family: var(--mono); }
   .today-btn {
-    display: inline-flex; align-items: center; justify-content: center; height: 30px;
-    margin: 0 auto 6px; padding: 0 24px; border: 1px solid #4C8F52; box-sizing: border-box;
-    background: #5B9A5B; color: #fff; font-family: var(--sans); font-size: 11.5px;
-    font-weight: 600; line-height: normal; border-radius: 999px; cursor: pointer; text-align: center;
-    white-space: nowrap; width: fit-content; overflow: hidden;
+    display: inline-flex; align-items: center; justify-content: center; height: 32px; flex-shrink: 0;
+    margin: 0; padding: 0 16px; border: 1px solid var(--border); background: var(--surface); color: var(--ink);
+    font-family: var(--sans); font-size: 14px; font-weight: 700; border-radius: 10px; cursor: pointer; white-space: nowrap;
   }
-  .today-btn:active { background: #4C8F52; }
+  .today-btn:active { background: var(--surface-2); }
 
   .quick-stats { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
   .qs-pill { font-size: 11.5px; color: var(--ink-soft); background: var(--surface); border: 1px solid var(--border); border-radius: 999px; padding: 4px 9px; font-family: var(--mono); }
@@ -172,8 +170,17 @@
   }
   .grid > .cell:nth-child(7n+1):not(.blank), .grid > .cell:nth-child(7n):not(.blank) { background: var(--cal-weekend); }
   .cell.blank { cursor: default; }
-  /* 今天:像用紅筆圈起來的橢圓 */
-  .cell.today::after { content: ""; position: absolute; left: 4%; right: 4%; top: 12%; bottom: 2%; border: 3.5px solid rgba(190, 25, 40, 0.8); border-radius: 50%; transform: rotate(-8deg); box-shadow: 0 1px 2px rgba(120, 0, 0, 0.35); pointer-events: none; z-index: 4; }
+  /* 目前加班期間:本月內屬於這一期的日子用一個橘框整個框起來 */
+  .cell.in-period::before { content: ""; position: absolute; inset: -1px 0 0 -1px; border: 0 solid var(--accent); pointer-events: none; z-index: 2; }
+  .cell.pt::before { border-top-width: 3px; }
+  .cell.pb::before { border-bottom-width: 3px; }
+  .cell.pl::before { border-left-width: 3px; }
+  .cell.pr::before { border-right-width: 3px; }
+  .period-key { display: inline-block; width: 14px; height: 10px; border: 2.5px solid var(--accent); border-radius: 2px; vertical-align: middle; margin-right: 5px; }
+  .bd-range { display: block; font-size: 12px; font-weight: 500; color: var(--ink-faint); margin-top: 1px; text-align: left; }
+  /* 今天:整格圈起來的紅圈,比格子大一點,日期數字在圈內 */
+  .cell.today { overflow: visible; z-index: 3; }
+  .cell.today::after { content: ""; position: absolute; left: -16%; right: -16%; top: -12%; bottom: -12%; border: 3.5px solid rgba(215, 20, 30, 0.85); border-radius: 50%; pointer-events: none; z-index: 4; }
   .cell .cell-top { position: relative; display: flex; align-items: flex-end; justify-content: space-between; height: clamp(20px, 5.8vw, 30px); flex-shrink: 0; }
   .cell .lunar { font-size: clamp(8px, 2.4vw, 11px); color: var(--cal-small); white-space: nowrap; overflow: hidden; line-height: 1.1; padding-bottom: 2px; min-width: 0; }
   .cell .lunar.hol-national { color: var(--cal-red); font-weight: 600; }
@@ -286,6 +293,7 @@
 
   <header class="top">
     <h1><button type="button" class="menu-btn" id="menuBtn" aria-label="功能表"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>加班計算器<button type="button" class="group-tag" id="groupTag" hidden></button></h1>
+    <button type="button" class="today-btn" id="todayBtn">本月</button>
   </header>
 
   <div class="year-banner" id="yearBanner" hidden>
@@ -297,7 +305,6 @@
   <div class="period-nav">
     <button id="prevPeriod" aria-label="上期">‹</button>
     <div class="plabel">
-      <button type="button" class="today-btn" id="todayBtn">本月</button>
       <h2 id="periodLabel">2026年10月份</h2>
       <div class="psub" id="periodSub">9/16–10/15</div>
     </div>
@@ -336,7 +343,7 @@
 
   <div class="breakdown collapsed" id="breakdownCard">
     <button type="button" class="bd-toggle" id="breakdownToggle" aria-expanded="false">
-      <span class="bd-label">本期延長工時合計</span>
+      <span class="bd-label">本期延長工時合計<small class="bd-range" id="bdRange"></small></span>
       <span class="bd-right"><span class="bd-total" id="heroOT">0.0</span><span class="bd-unit">小時</span><span class="bd-chev">▾</span></span>
     </button>
     <span id="heroWeighted" hidden></span>
@@ -573,6 +580,13 @@
   var today = new Date();
   var todayKey = fmtKey(today.getFullYear(), today.getMonth(), today.getDate());
   var curPeriod = getCurrentPeriodKey();
+  // 月曆顯示自然月(1~月底);加班期間(16~15)跟著選取的日期走
+  var curMonth = { y: today.getFullYear(), m: today.getMonth() };
+  function periodOf(dk){
+    var p = parseKey(dk);
+    var d = new Date(p.y, p.m + (p.d >= 16 ? 1 : 0), 1);
+    return d.getFullYear() + "-" + pad2(d.getMonth()+1);
+  }
   var editingKey = null;
   var pendingType = "", pendingLeave = "";
 
@@ -834,17 +848,34 @@
     tag.textContent = !STORE.group ? "選擇班別" : (GROUP_CYCLES[STORE.group] ? STORE.group : "手動輸入");
   }
   function ensureSelectedDay(){
-    var dates = periodDates(curPeriod);
-    if (editingKey && dates.indexOf(editingKey) >= 0) return;
-    editingKey = dates.indexOf(todayKey) >= 0 ? todayKey : dates[0];
+    var dates = monthDates(curMonth.y, curMonth.m);
+    if (!(editingKey && dates.indexOf(editingKey) >= 0)){
+      editingKey = dates.indexOf(todayKey) >= 0 ? todayKey : dates[0];
+    }
+    curPeriod = periodOf(editingKey);
+  }
+  function renderLabels(){
+    document.getElementById("periodLabel").textContent = curMonth.y + "年" + (curMonth.m+1) + "月";
+    document.getElementById("periodSub").innerHTML = '<span class="period-key"></span>加班計算期間 ' + periodLabel(curPeriod).sub;
+    document.getElementById("bdRange").textContent = periodLabel(curPeriod).sub;
+  }
+  // 點日期:換到別的加班期間時,合計與標線一起更新
+  function selectDay(key){
+    var old = curPeriod;
+    openEditor(key);
+    curPeriod = periodOf(key);
+    if (curPeriod !== old){
+      renderLabels();
+      renderHero();
+      renderBreakdown();
+      renderCalendar();
+    }
   }
   function renderAll(){
     renderGroupTag();
     ensureSelectedDay();
     openEditor(editingKey);
-    var lbl = periodLabel(curPeriod);
-    document.getElementById("periodLabel").textContent = lbl.main;
-    document.getElementById("periodSub").textContent = lbl.sub;
+    renderLabels();
     renderHero();
     renderBreakdown();
     renderCalendar();
@@ -998,7 +1029,7 @@
   function renderCalendar(){
     var grid = document.getElementById("calGrid");
     grid.innerHTML = "";
-    var dates = periodDates(curPeriod);
+    var dates = monthDates(curMonth.y, curMonth.m);
     var first = parseKey(dates[0]);
     var firstDow = new Date(first.y, first.m, first.d).getDay();
     for (var i = firstDow; i > 0; i--) appendOutsideCell(grid, addDays(dates[0], -i));
@@ -1007,7 +1038,7 @@
       var entry = STORE.entries[dk];
       var isDisaster = !!STORE.disasters[dk];
       var cell = document.createElement("div");
-      cell.className = "cell" + (dk === todayKey ? " today" : "") + (isDisaster ? " disaster-day" : "") + (dk === editingKey ? " selected" : "");
+      cell.className = "cell" + (dk === todayKey ? " today" : "") + (isDisaster ? " disaster-day" : "") + (dk === editingKey ? " selected" : "") + (periodOf(dk) === curPeriod ? " in-period" : "");
       cell.dataset.key = dk;
       var hol = STORE.holidays[dk];
       var top = buildCellTop(p, hol);
@@ -1068,13 +1099,24 @@
         cell.appendChild(box);
       }
 
-      cell.addEventListener("click", function(){ openEditor(this.dataset.key); });
+      cell.addEventListener("click", function(){ selectDay(this.dataset.key); });
       grid.appendChild(cell);
     });
     var totalCells = firstDow + dates.length;
     var trailing = (7 - (totalCells % 7)) % 7;
     var lastKey = dates[dates.length-1];
     for (var j = 1; j <= trailing; j++) appendOutsideCell(grid, addDays(lastKey, j));
+    // 框線只畫在區塊外緣:旁邊那格不在這一期才畫
+    var cells = grid.children;
+    function inP(i){ return i >= 0 && i < cells.length && cells[i].classList.contains("in-period"); }
+    for (var k = 0; k < cells.length; k++){
+      if (!inP(k)) continue;
+      var col = k % 7;
+      if (!inP(k-7)) cells[k].classList.add("pt");
+      if (!inP(k+7)) cells[k].classList.add("pb");
+      if (col === 0 || !inP(k-1)) cells[k].classList.add("pl");
+      if (col === 6 || !inP(k+1)) cells[k].classList.add("pr");
+    }
   }
 
   // ---------- day editor ----------
@@ -1640,7 +1682,8 @@
 
   // ---------- wire up ----------
   function goPeriod(delta){
-    curPeriod = shiftPeriod(curPeriod, delta);
+    var nd = new Date(curMonth.y, curMonth.m + delta, 1);
+    curMonth = { y: nd.getFullYear(), m: nd.getMonth() };
     renderAll();
     var grid = document.getElementById("calGrid");
     grid.classList.remove("slide-next","slide-prev");
@@ -1649,11 +1692,11 @@
   }
   document.getElementById("prevPeriod").addEventListener("click", function(){ goPeriod(-1); });
   document.getElementById("todayBtn").addEventListener("click", function(){
-    var target = getCurrentPeriodKey();
-    if (target === curPeriod) return;
-    var delta = target > curPeriod ? 1 : -1;
-    curPeriod = target;
+    var delta = (today.getFullYear() - curMonth.y) * 12 + (today.getMonth() - curMonth.m);
+    editingKey = todayKey;
+    curMonth = { y: today.getFullYear(), m: today.getMonth() };
     renderAll();
+    if (!delta) return;
     var grid = document.getElementById("calGrid");
     grid.classList.remove("slide-next","slide-prev");
     void grid.offsetWidth;
