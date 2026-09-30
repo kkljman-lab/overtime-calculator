@@ -220,7 +220,9 @@
   .sheet-title { font-size: 15px; font-weight: 600; margin: 0; }
   .sheet-title .sub { display: block; font-size: 11.5px; color: var(--ink-faint); font-weight: 400; margin-top: 2px; }
   .sheet-head { display: flex; align-items: flex-start; justify-content: space-between; padding: 16px 16px 0; flex-shrink: 0; }
-  .sheet-body { overflow-y: auto; padding: 12px 16px 4px; flex: 1 1 auto; min-height: 0; -webkit-overflow-scrolling: touch; }
+  .sheet-body { overflow-y: auto; padding: 12px 16px 4px; flex: 1 1 auto; min-height: 0; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
+  .overlay, .drawer-overlay, .drawer { overscroll-behavior: contain; }
+  body.modal-lock { position: fixed; left: 0; right: 0; overflow: hidden; }
   .close-x {
     background: var(--surface-2); border: none; color: var(--ink-soft); width: 28px; height: 28px;
     border-radius: 50%; font-size: 18px; line-height: 1; cursor: pointer; flex-shrink: 0;
@@ -281,7 +283,19 @@
   .seg { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; background: var(--surface-2); padding: 4px; border-radius: 10px; margin-bottom: 12px; }
   .seg button { border: none; background: none; padding: 8px 0; border-radius: 7px; font-family: var(--sans); font-size: 13.5px; font-weight: 600; color: var(--ink-soft); cursor: pointer; }
   .seg button.on { background: var(--surface); color: var(--ink); box-shadow: 0 1px 3px rgba(0,0,0,0.12); }
-  .hol-add-form[hidden] { display: none; }
+  .hol-add-form[hidden], .rest-cand[hidden] { display: none; }
+  .rest-cand { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border); }
+  .rc-head { display: flex; justify-content: space-between; align-items: center; font-size: 14px; }
+  .rc-year { display: flex; align-items: center; gap: 6px; font-family: var(--mono); font-size: 14px; }
+  .rc-year button { width: 28px; height: 28px; border: 1px solid var(--border); background: var(--surface); border-radius: 8px; cursor: pointer; font-size: 15px; color: var(--ink); }
+  .rc-note { font-size: 12px; color: var(--ink-faint); line-height: 1.5; margin: 6px 0 8px; }
+  .rc-week { padding: 9px 0; border-top: 1px dashed var(--border); }
+  .rc-week-head { display: flex; justify-content: space-between; font-size: 13px; color: var(--ink-soft); margin-bottom: 6px; }
+  .rc-week-head .rc-done { color: var(--comprest); font-weight: 700; }
+  .rc-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .rc-chip { border: 1.5px solid var(--border); background: var(--surface); border-radius: 8px; padding: 5px 8px; font-family: var(--sans); font-size: 13px; color: var(--ink); cursor: pointer; }
+  .rc-chip.on { background: var(--comprest); border-color: var(--comprest); color: #fff; font-weight: 700; }
+  .rc-empty { font-size: 12.5px; color: var(--ink-faint); padding: 8px 0; }
   .hol-add-form { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); }
 
   .toast { position: fixed; bottom: calc(24px + env(safe-area-inset-bottom, 0px)); left: 50%; transform: translateX(-50%) translateY(10px); background: var(--ink); color: var(--bg); padding: 9px 16px; border-radius: 999px; font-size: 12.5px; opacity: 0; pointer-events: none; transition: opacity 0.2s, transform 0.2s; z-index: 80; white-space: nowrap; }
@@ -418,11 +432,11 @@
       <div class="help-item"><div class="hi-head"><b>國定加班</b><span class="hi-hr">8 hr</span></div>
         <p>國定假日、特殊節日當天有上班。12 小時班也只算 8 hr。補假、小年夜等「放假日」不算。</p></div>
       <div class="help-item"><div class="hi-head"><b>獎工時數</b><span class="hi-hr">8 hr</span></div>
-        <p>特殊節日（元旦、除夕、初一、初二、中秋）或天災停班上班，再多加 8 hr。兩者同一天只給一次。</p></div>
+        <p>元旦、中秋或天災停班上班，再多加 8 hr。兩者同一天只給一次。（除夕、初一、初二上班是補休，見下方）</p></div>
       <div class="help-item"><div class="hi-head"><b>天災出勤加班</b><span class="hi-hr">8 hr</span></div>
         <p>政府宣布停班那天有上班，另加獎工 8 hr。大夜班照時間切：前一天停班 0.25 hr、當天停班 7.75 hr。</p></div>
-      <div class="help-item"><div class="hi-head"><b>特休補休（除夕初一初二）</b><span class="hi-hr">8 hr</span></div>
-        <p>除夕、初一、初二請特休或例假，會給一天補休加班。</p></div>
+      <div class="help-item"><div class="hi-head"><b>補休（除夕初一初二）</b><span class="hi-hr">8 hr</span></div>
+        <p>除夕、初一、初二請特休或例假，會給一天補休加班；這三天有上班則是加8補8（國定加班 8＋補休 8）。</p></div>
       <div class="help-item hi-sep"><div class="hi-head"><b>手寫另報</b><span class="hi-hr">0.5 hr</span></div>
         <p>當天加班滿 4 hr 時，交接班時數改列這裡（系統單日最多報 12 hr）。中21 班這天沒有交接班，也不列這裡。<strong>不算進合計。</strong></p></div>
       <div class="help-note">請假的那天沒有國定加班、獎工時數、天災出勤加班。</div>
@@ -471,11 +485,19 @@
           <button class="opt-btn" id="holTypeDayoff">放假日</button>
         </div>
         <div class="hol-type-hint">放假日：補假、小年夜等。日期顯示紅字、常日班放假，輪班不算國定加班。</div>
-        <div class="check-row"><input type="checkbox" id="holCnyCheck"><label for="holCnyCheck">屬於除夕／初一／初二（特休補休適用）</label></div>
+        <div class="check-row"><input type="checkbox" id="holCnyCheck"><label for="holCnyCheck">屬於除夕／初一／初二（補休適用）</label></div>
       </div>
       <div class="hol-add-form" id="dateForm" hidden>
         <p class="field-label" style="margin-top:0" id="dateFormLabel">新增日期</p>
         <input type="date" class="form-input" id="spDateInput">
+      </div>
+      <div class="rest-cand" id="restCand" hidden>
+        <div class="rc-head">
+          <b>可排休息日加班的日子</b>
+          <span class="rc-year"><button type="button" id="rcPrev" aria-label="上一年">‹</button><span id="rcYear"></span><button type="button" id="rcNext" aria-label="下一年">›</button></span>
+        </div>
+        <p class="rc-note">一～日只休一天的週，可從那週挑一天（避開休假與加班的日子），實際日期由人資決定。點日期就會加入或取消。</p>
+        <div id="rcList"></div>
       </div>
     </div>
     <div class="sheet-actions">
@@ -521,7 +543,7 @@
     { key:"statHoliday",  label:"國定加班",                rate:1 },
     { key:"bonus",        label:"獎工時數",                rate:1 },
     { key:"disasterOT",   label:"天災出勤加班",            rate:1 },
-    { key:"cnyLeaveComp", label:"特休補休（除夕初一初二）",rate:1 }
+    { key:"cnyLeaveComp", label:"補休（除夕初一初二）",   rate:1 }
   ];
   var MANUAL_REPORT_CAT = { key:"manualReport", label:"手寫另報", rate:1 };
 
@@ -543,11 +565,11 @@
     "2026-02-27": {name:"補假",     type:"放假日", cny:false},
     "2026-04-03": {name:"補假",     type:"放假日", cny:false},
     "2026-04-06": {name:"補假",     type:"放假日", cny:false},
-    "2026-09-28": {name:"教師節",   type:"放假日", cny:false},
+    "2026-09-28": {name:"教師節",   type:"國定假日", cny:false},
     "2026-10-09": {name:"補假",     type:"放假日", cny:false},
-    "2026-10-25": {name:"光復節",   type:"放假日", cny:false},
+    "2026-10-25": {name:"光復節",   type:"國定假日", cny:false},
     "2026-10-26": {name:"補假",     type:"放假日", cny:false},
-    "2026-12-25": {name:"行憲紀念日", type:"放假日", cny:false}
+    "2026-12-25": {name:"行憲紀念日", type:"國定假日", cny:false}
   };
 
   var PRESET_V1 = {};
@@ -616,6 +638,11 @@
           STORE.byGroup = {};
           STORE.byGroup[STORE.group] = { entries: STORE.entries, compRest: STORE.compRest, holidayWork: STORE.holidayWork };
         }
+        // 教師節/光復節/行憲紀念日改列國定假日(之前匯入成放假日的一併更正)
+        Object.keys(STORE.holidays).forEach(function(k){
+          var h = STORE.holidays[k];
+          if (h && h.type === "放假日" && /^(教師節|光復節|行憲紀念日)$/.test(h.name)) h.type = "國定假日";
+        });
         bindGroup(STORE.group);
         return;
       }
@@ -792,7 +819,8 @@
       var hol = STORE.holidays[dateKey];
       if (hol && hol.type !== "放假日"){
         result.statHoliday += 8;
-        if (hol.type === "特殊節日") result.bonus += 8;
+        // 除夕初一初二上班是加8補8(補休),其他特殊節日是加8獎8
+        if (hol.type === "特殊節日"){ if (hol.cny) result.cnyLeaveComp += 8; else result.bonus += 8; }
       }
       var disasterHrs = disasterOvertimeHoursForShift(shift, dateKey, STORE.disasters, 8);
       result.disasterOT += disasterHrs;
@@ -1221,7 +1249,8 @@
     var lines = [];
     var bonusShown = false;
     if (hol){
-      if (rotation && worked && hol.type === "特殊節日"){ lines.push(hol.name + "，加8獎8"); bonusShown = true; }
+      if (rotation && worked && hol.type === "特殊節日" && hol.cny) lines.push(hol.name + "，加8補8");
+      else if (rotation && worked && hol.type === "特殊節日"){ lines.push(hol.name + "，加8獎8"); bonusShown = true; }
       else if (rotation && worked && hol.type === "國定假日") lines.push(hol.name + "，加8");
       else lines.push("假日資訊：" + hol.name + "（" + hol.type + (hol.cny ? "・除夕初一初二" : "") + "）");
     }
@@ -1278,6 +1307,7 @@
     document.getElementById("holForm").hidden = tab !== "holiday";
     document.getElementById("dateForm").hidden = tab === "holiday";
     document.getElementById("govOpenBtn").hidden = tab !== "holiday";
+    document.getElementById("restCand").hidden = !(tab === "flag" && !isWeekdayGroup());
     document.getElementById("dateFormLabel").textContent = "新增" + (tab === "disaster" ? "天災停班" : flagLabel()) + "日期";
     document.getElementById("spDateInput").value = "";
     document.getElementById("holSaveBtn").textContent = tab === "holiday" ? "新增／更新" : "新增";
@@ -1306,9 +1336,72 @@
     });
   }
 
+  // 休息日加班候選:一～日這 7 天只有一天大休/小休的週,列出可以挑的日子
+  var rcYear = today.getFullYear();
+  function restCandidateWeeks(year){
+    var weeks = [];
+    var d = new Date(year, 0, 1);
+    while (d.getDay() !== 1) d.setDate(d.getDate() + 1);
+    for (; d.getFullYear() === year; d.setDate(d.getDate() + 7)){
+      var days = [], rest = [];
+      for (var i = 0; i < 7; i++){
+        var x = new Date(d.getFullYear(), d.getMonth(), d.getDate() + i);
+        var dk = fmtKey(x.getFullYear(), x.getMonth(), x.getDate());
+        var sh = effectiveShiftType(dk);
+        if (sh === "大休" || sh === "小休"){ rest.push({ dk: dk, shift: sh }); continue; }
+        if (!sh) continue;
+        var e = STORE.entries[dk];
+        var hol = STORE.holidays[dk];
+        if (e && (e.otHours > 0 || e.leaveType)) continue;
+        if (hol && hol.type !== "放假日") continue;
+        days.push(dk);
+      }
+      if (rest.length === 1 && days.length) weeks.push({ start: fmtKey(d.getFullYear(), d.getMonth(), d.getDate()), rest: rest[0], days: days });
+    }
+    return weeks;
+  }
+  function shortDate(dk){
+    var p = parseKey(dk);
+    return (p.m+1) + "/" + p.d + "（" + WEEKDAY_NAMES[new Date(p.y, p.m, p.d).getDay()] + "）";
+  }
+  function renderRestCandidates(){
+    document.getElementById("rcYear").textContent = rcYear;
+    var el = document.getElementById("rcList");
+    el.innerHTML = "";
+    var weeks = restCandidateWeeks(rcYear);
+    if (!weeks.length){ el.innerHTML = '<div class="rc-empty">這一年沒有符合的週</div>'; return; }
+    weeks.forEach(function(w){
+      var picked = w.days.filter(function(dk){ return STORE.compRest[dk]; });
+      var box = document.createElement("div");
+      box.className = "rc-week";
+      var sp = parseKey(w.start), ep = parseKey(addDays(w.start, 6)), rp = parseKey(w.rest.dk);
+      box.innerHTML = '<div class="rc-week-head"><span>' + (sp.m+1) + '/' + sp.d + '–' + (ep.m+1) + '/' + ep.d +
+        '　休 ' + (rp.m+1) + '/' + rp.d + ' ' + w.rest.shift + '</span>' +
+        (picked.length ? '<span class="rc-done">已排</span>' : '') + '</div>';
+      var chips = document.createElement("div");
+      chips.className = "rc-chips";
+      w.days.forEach(function(dk){
+        var b = document.createElement("button");
+        b.type = "button";
+        b.className = "rc-chip" + (STORE.compRest[dk] ? " on" : "");
+        b.textContent = shortDate(dk);
+        b.addEventListener("click", function(){
+          if (STORE.compRest[dk]) delete STORE.compRest[dk]; else STORE.compRest[dk] = true;
+          saveData(); renderHolList(); renderAll();
+        });
+        chips.appendChild(b);
+      });
+      box.appendChild(chips);
+      el.appendChild(box);
+    });
+  }
+  document.getElementById("rcPrev").addEventListener("click", function(){ rcYear--; renderRestCandidates(); });
+  document.getElementById("rcNext").addEventListener("click", function(){ rcYear++; renderRestCandidates(); });
+
   function renderHolList(){
     var el = document.getElementById("holList");
     el.innerHTML = "";
+    if (spTab === "flag" && !isWeekdayGroup()) renderRestCandidates();
     if (spTab !== "holiday"){ renderDateList(el); return; }
     var keys = Object.keys(STORE.holidays).sort();
     if (keys.length === 0){ el.innerHTML = '<div class="history-empty">尚無假日資料</div>'; return; }
@@ -1390,7 +1483,7 @@
   });
 
   // ---------- 政府行事曆匯入 ----------
-  // 國定假日算節日當天;補假、小年夜、新制節日(教師節/光復節/行憲)匯入成「放假日」
+  // 國定假日算節日當天;補假、小年夜匯入成「放假日」;教師節/光復節/行憲是國定假日
   var GOV_URL = "https://cdn.jsdelivr.net/gh/ruyut/TaiwanCalendar/data/";
   var GOV_NAMES = {
     "開國紀念日": { name:"元旦", type:"特殊節日" },
@@ -1400,9 +1493,9 @@
     "中秋節": { name:"中秋節", type:"特殊節日" },
     "補假": { name:"補假", type:"放假日" },
     "小年夜": { name:"小年夜", type:"放假日" },
-    "孔子誕辰紀念日/教師節": { name:"教師節", type:"放假日" },
-    "臺灣光復暨金門古寧頭大捷紀念日": { name:"光復節", type:"放假日" },
-    "行憲紀念日": { name:"行憲紀念日", type:"放假日" }
+    "孔子誕辰紀念日/教師節": { name:"教師節", type:"國定假日" },
+    "臺灣光復暨金門古寧頭大捷紀念日": { name:"光復節", type:"國定假日" },
+    "行憲紀念日": { name:"行憲紀念日", type:"國定假日" }
   };
   var SPRING_DAYS = [
     { name:"初一", type:"特殊節日", cny:true },
@@ -1787,6 +1880,28 @@
   try {
     if (navigator.storage && navigator.storage.persist) { navigator.storage.persist(); }
   } catch(e){}
+
+  // 有視窗或功能表打開時鎖住背景,手機上下滑只會捲視窗內容(iPhone 需要把 body 固定住)
+  (function(){
+    var locked = false, savedY = 0;
+    var panels = document.querySelectorAll(".overlay, .drawer-overlay");
+    function sync(){
+      var anyOpen = Array.prototype.some.call(panels, function(el){ return el.classList.contains("open"); });
+      if (anyOpen && !locked){
+        savedY = window.scrollY;
+        document.body.style.top = -savedY + "px";
+        document.body.classList.add("modal-lock");
+        locked = true;
+      } else if (!anyOpen && locked){
+        document.body.classList.remove("modal-lock");
+        document.body.style.top = "";
+        window.scrollTo(0, savedY);
+        locked = false;
+      }
+    }
+    var mo = new MutationObserver(sync);
+    Array.prototype.forEach.call(panels, function(el){ mo.observe(el, { attributes: true, attributeFilter: ["class"] }); });
+  })();
 
   loadData();
   renderAll();
