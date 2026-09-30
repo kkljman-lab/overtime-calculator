@@ -280,13 +280,27 @@
   .hol-row .htype.dayoff, .gov-row .gt.dayoff { background: #8A8F98; }
   .hol-type-hint { font-size: 11.5px; color: var(--ink-faint); line-height: 1.5; }
   .hol-row button { background: none; border: none; color: var(--leave); font-size: 12px; cursor: pointer; }
-  .seg { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; background: var(--surface-2); padding: 4px; border-radius: 10px; margin-bottom: 12px; }
+  .seg { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 4px; background: var(--surface-2); padding: 4px; border-radius: 10px; margin-bottom: 12px; }
   .seg button { border: none; background: none; padding: 8px 0; border-radius: 7px; font-family: var(--sans); font-size: 13.5px; font-weight: 600; color: var(--ink-soft); cursor: pointer; }
+  .seg[hidden], .seg button[hidden] { display: none; }
   .seg button.on { background: var(--surface); color: var(--ink); box-shadow: 0 1px 3px rgba(0,0,0,0.12); }
   .hol-add-form[hidden], .rest-cand[hidden] { display: none; }
   .rest-cand { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border); }
   .rc-head { display: flex; justify-content: space-between; align-items: center; font-size: 14px; }
+  .rc-total { font-family: var(--mono); font-size: 15px; font-weight: 700; color: var(--comprest); }
+  .rc-total.full { color: var(--leave); }
+  .rc-yearrow { display: flex; justify-content: flex-end; margin-top: 6px; }
   .rc-year { display: flex; align-items: center; gap: 6px; font-family: var(--mono); font-size: 14px; }
+  .rc-month { border: 1px solid var(--border); border-radius: 10px; margin-bottom: 8px; overflow: hidden; }
+  .rc-month summary { list-style: none; display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; font-size: 15px; font-weight: 600; cursor: pointer; background: var(--surface-2); }
+  .rc-month summary::-webkit-details-marker { display: none; }
+  .rc-month summary .rc-mcount { font-family: var(--mono); font-size: 13px; color: var(--ink-soft); font-weight: 600; }
+  .rc-month summary .rc-mcount.on { color: var(--comprest); }
+  .rc-month summary::after { content: "▾"; color: var(--ink-faint); font-size: 12px; margin-left: 8px; transition: transform 0.2s; }
+  .rc-month:not([open]) summary::after { transform: rotate(-90deg); }
+  .rc-month summary > span:first-child { flex: 1; }
+  .rc-month-body { padding: 0 12px 6px; }
+  .rc-month-body .rc-week:first-child { border-top: none; }
   .rc-year button { width: 28px; height: 28px; border: 1px solid var(--border); background: var(--surface); border-radius: 8px; cursor: pointer; font-size: 15px; color: var(--ink); }
   .rc-note { font-size: 12px; color: var(--ink-faint); line-height: 1.5; margin: 6px 0 8px; }
   .rc-week { padding: 9px 0; border-top: 1px dashed var(--border); }
@@ -392,7 +406,8 @@
     <div class="drawer-head"><b>加班計算器</b><button type="button" class="close-x" id="menuCloseBtn" aria-label="關閉">×</button></div>
     <div class="menu-sec">
       <p class="menu-sec-title">行事曆</p>
-      <button type="button" class="menu-item" id="holBtn"><span class="mi-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg></span><span class="mi-text"><b>特殊日</b><small>休息日加班・天災停班・國定假日</small></span></button>
+      <button type="button" class="menu-item" id="holBtn"><span class="mi-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg></span><span class="mi-text"><b>國定假日</b><small>國定假日、特殊節日、補假</small></span></button>
+      <button type="button" class="menu-item" id="flagMenuBtn"><span class="mi-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 21V4M5 4h11l-2 4 2 4H5"/></svg></span><span class="mi-text"><b id="flagMenuTitle">休息日加班、停班</b><small id="flagMenuSub">人資指定的休息日加班・天災停班</small></span></button>
       <button type="button" class="menu-item" id="govMenuBtn"><span class="mi-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h16M6 20V10M10 20V10M14 20V10M18 20V10M3 10l9-6 9 6z"/></svg></span><span class="mi-text"><b>匯入政府行事曆</b><small>自動抓取國定假日與補假</small></span></button>
     </div>
     <div class="menu-sec">
@@ -428,7 +443,7 @@
       <div class="help-item"><div class="hi-head"><b>超時加班</b><span class="hi-hr">超過 2 hr</span></div>
         <p>當天加班超過 2 小時的部分。例：加班 3 hr = 平日 2 + 超時 1。</p></div>
       <div class="help-item"><div class="hi-head"><b>休息日加班（制度）</b><span class="hi-hr">8 + 0.5 hr</span></div>
-        <p>人資指定的日子（一年約 13 天），在「特殊日」設定。</p></div>
+        <p>人資指定的日子（一年約 13 天），在功能表「休息日加班、停班」設定。</p></div>
       <div class="help-item"><div class="hi-head"><b>國定加班</b><span class="hi-hr">8 hr</span></div>
         <p>國定假日、特殊節日當天有上班。12 小時班也只算 8 hr。補假、小年夜等「放假日」不算。</p></div>
       <div class="help-item"><div class="hi-head"><b>獎工時數</b><span class="hi-hr">8 hr</span></div>
@@ -464,7 +479,7 @@
 <div class="overlay" id="holOverlay">
   <div class="sheet">
     <div class="sheet-head">
-      <p class="sheet-title">特殊日管理</p>
+      <p class="sheet-title" id="spTitle">國定假日</p>
       <button type="button" class="close-x" id="holCloseXBtn" aria-label="關閉">×</button>
     </div>
     <div class="sheet-body">
@@ -494,6 +509,9 @@
       <div class="rest-cand" id="restCand" hidden>
         <div class="rc-head">
           <b>可排休息日加班的日子</b>
+          <span class="rc-total" id="rcTotal"></span>
+        </div>
+        <div class="rc-yearrow">
           <span class="rc-year"><button type="button" id="rcPrev" aria-label="上一年">‹</button><span id="rcYear"></span><button type="button" id="rcNext" aria-label="下一年">›</button></span>
         </div>
         <p class="rc-note">一～日只休一天的週，可從那週挑一天（避開休假與加班的日子），實際日期由人資決定。點日期就會加入或取消。</p>
@@ -870,7 +888,13 @@
   }
 
   // ---------- render ----------
+  function renderFlagMenuLabel(){
+    var wk = isWeekdayGroup();
+    document.getElementById("flagMenuTitle").textContent = (wk ? "假日出勤" : "休息日加班") + "、停班";
+    document.getElementById("flagMenuSub").textContent = wk ? "假日出勤・天災停班" : "人資指定的休息日加班・天災停班";
+  }
   function renderGroupTag(){
+    renderFlagMenuLabel();
     var tag = document.getElementById("groupTag");
     tag.hidden = false;
     tag.textContent = !STORE.group ? "選擇班別" : (GROUP_CYCLES[STORE.group] ? STORE.group : "手動輸入");
@@ -1305,12 +1329,14 @@
     Array.prototype.forEach.call(document.querySelectorAll("#spTabs button"), function(b){ b.classList.toggle("on", b.dataset.tab === tab); });
     document.getElementById("spFlagTab").textContent = flagLabel();
     document.getElementById("holForm").hidden = tab !== "holiday";
-    document.getElementById("dateForm").hidden = tab === "holiday";
+    // 輪班的休息日加班直接點下方可排日子,不需要另外輸入日期
+    var pickMode = tab === "flag" && !isWeekdayGroup();
+    document.getElementById("dateForm").hidden = tab === "holiday" || pickMode;
     document.getElementById("govOpenBtn").hidden = tab !== "holiday";
-    document.getElementById("restCand").hidden = !(tab === "flag" && !isWeekdayGroup());
+    document.getElementById("restCand").hidden = !pickMode;
     document.getElementById("dateFormLabel").textContent = "新增" + (tab === "disaster" ? "天災停班" : flagLabel()) + "日期";
     document.getElementById("spDateInput").value = "";
-    document.getElementById("holSaveBtn").textContent = tab === "holiday" ? "新增／更新" : "新增";
+    document.getElementById("holSaveBtn").textContent = tab === "holiday" ? "新增／更新" : pickMode ? "儲存" : "新增";
     renderHolList();
   }
   Array.prototype.forEach.call(document.querySelectorAll("#spTabs button"), function(b){
@@ -1340,9 +1366,11 @@
   var rcYear = today.getFullYear();
   function restCandidateWeeks(year){
     var weeks = [];
+    // 從包含 1/1 的那週(星期一)開始,到包含 12/31 的那週為止
     var d = new Date(year, 0, 1);
-    while (d.getDay() !== 1) d.setDate(d.getDate() + 1);
-    for (; d.getFullYear() === year; d.setDate(d.getDate() + 7)){
+    while (d.getDay() !== 1) d.setDate(d.getDate() - 1);
+    var yearEnd = new Date(year, 11, 31);
+    for (; d <= yearEnd; d.setDate(d.getDate() + 7)){
       var days = [], rest = [];
       for (var i = 0; i < 7; i++){
         var x = new Date(d.getFullYear(), d.getMonth(), d.getDate() + i);
@@ -1364,35 +1392,71 @@
     var p = parseKey(dk);
     return (p.m+1) + "/" + p.d + "（" + WEEKDAY_NAMES[new Date(p.y, p.m, p.d).getDay()] + "）";
   }
+  // 一年最多 13 天、每月最多 2 天;按月份分組,每月可收合
+  var REST_MAX_YEAR = 13, REST_MAX_MONTH = 2;
+  var rcOpen = {};
   function renderRestCandidates(){
     document.getElementById("rcYear").textContent = rcYear;
+    var picked = Object.keys(STORE.compRest).filter(function(k){ return STORE.compRest[k] && k.slice(0,4) === String(rcYear); });
+    var totalEl = document.getElementById("rcTotal");
+    totalEl.textContent = picked.length + "/" + REST_MAX_YEAR;
+    totalEl.className = "rc-total" + (picked.length >= REST_MAX_YEAR ? " full" : "");
     var el = document.getElementById("rcList");
     el.innerHTML = "";
     var weeks = restCandidateWeeks(rcYear);
-    if (!weeks.length){ el.innerHTML = '<div class="rc-empty">這一年沒有符合的週</div>'; return; }
+    // 依日期所在月份分組;跨月的週會在兩個月各出現一次
+    var months = {};
     weeks.forEach(function(w){
-      var picked = w.days.filter(function(dk){ return STORE.compRest[dk]; });
-      var box = document.createElement("div");
-      box.className = "rc-week";
-      var sp = parseKey(w.start), ep = parseKey(addDays(w.start, 6)), rp = parseKey(w.rest.dk);
-      box.innerHTML = '<div class="rc-week-head"><span>' + (sp.m+1) + '/' + sp.d + '–' + (ep.m+1) + '/' + ep.d +
-        '　休 ' + (rp.m+1) + '/' + rp.d + ' ' + w.rest.shift + '</span>' +
-        (picked.length ? '<span class="rc-done">已排</span>' : '') + '</div>';
-      var chips = document.createElement("div");
-      chips.className = "rc-chips";
       w.days.forEach(function(dk){
-        var b = document.createElement("button");
-        b.type = "button";
-        b.className = "rc-chip" + (STORE.compRest[dk] ? " on" : "");
-        b.textContent = shortDate(dk);
-        b.addEventListener("click", function(){
-          if (STORE.compRest[dk]) delete STORE.compRest[dk]; else STORE.compRest[dk] = true;
-          saveData(); renderHolList(); renderAll();
-        });
-        chips.appendChild(b);
+        var p = parseKey(dk);
+        if (p.y !== rcYear) return;
+        var m = months[p.m] || (months[p.m] = {});
+        (m[w.start] || (m[w.start] = { week: w, days: [] })).days.push(dk);
       });
-      box.appendChild(chips);
-      el.appendChild(box);
+    });
+    picked.forEach(function(dk){ var p = parseKey(dk); if (!months[p.m]) months[p.m] = {}; });
+    var monthKeys = Object.keys(months).map(Number).sort(function(a,b){ return a-b; });
+    if (!monthKeys.length){ el.innerHTML = '<div class="rc-empty">這一年沒有符合的週</div>'; return; }
+    monthKeys.forEach(function(mi){
+      var cnt = picked.filter(function(dk){ return parseKey(dk).m === mi; }).length;
+      var key = rcYear + "-" + mi;
+      var det = document.createElement("details");
+      det.className = "rc-month";
+      if (rcOpen[key]) det.open = true;
+      det.addEventListener("toggle", function(){ rcOpen[key] = det.open; });
+      det.innerHTML = '<summary><span>' + (mi+1) + '月</span><span class="rc-mcount' + (cnt ? " on" : "") + '">（' + cnt + '/' + REST_MAX_MONTH + '）</span></summary>';
+      var body = document.createElement("div");
+      body.className = "rc-month-body";
+      var groups = months[mi];
+      var starts = Object.keys(groups).sort();
+      if (!starts.length) body.innerHTML = '<div class="rc-empty">這個月沒有符合的週（已排的日子請看上方清單）</div>';
+      starts.forEach(function(st){
+        var g = groups[st], w = g.week;
+        var box = document.createElement("div");
+        box.className = "rc-week";
+        var sp = parseKey(w.start), ep = parseKey(addDays(w.start, 6)), rp = parseKey(w.rest.dk);
+        var weekPicked = w.days.some(function(dk){ return STORE.compRest[dk]; });
+        box.innerHTML = '<div class="rc-week-head"><span>' + (sp.m+1) + '/' + sp.d + '–' + (ep.m+1) + '/' + ep.d +
+          '　休 ' + (rp.m+1) + '/' + rp.d + ' ' + w.rest.shift + '</span>' +
+          (weekPicked ? '<span class="rc-done">已排</span>' : '') + '</div>';
+        var chips = document.createElement("div");
+        chips.className = "rc-chips";
+        g.days.forEach(function(dk){
+          var b = document.createElement("button");
+          b.type = "button";
+          b.className = "rc-chip" + (STORE.compRest[dk] ? " on" : "");
+          b.textContent = shortDate(dk);
+          b.addEventListener("click", function(){
+            if (STORE.compRest[dk]) delete STORE.compRest[dk]; else STORE.compRest[dk] = true;
+            saveData(); renderHolList(); renderAll();
+          });
+          chips.appendChild(b);
+        });
+        box.appendChild(chips);
+        body.appendChild(box);
+      });
+      det.appendChild(body);
+      el.appendChild(det);
     });
   }
   document.getElementById("rcPrev").addEventListener("click", function(){ rcYear--; renderRestCandidates(); });
@@ -1444,11 +1508,18 @@
   document.getElementById("holTypeNational").addEventListener("click", function(){ holPendingType = "國定假日"; updateHolTypeBtns(); });
   document.getElementById("holTypeDayoff").addEventListener("click", function(){ holPendingType = "放假日"; updateHolTypeBtns(); });
 
-  document.getElementById("holBtn").addEventListener("click", function(){
+  // 功能表兩個入口共用同一個視窗:「國定假日」只顯示假日;「休息日加班、停班」顯示這兩個分頁
+  function openSpecial(mode){
+    var holidayMode = mode === "holiday";
+    document.getElementById("spTitle").textContent = holidayMode ? "國定假日" : flagLabel() + "、停班";
+    document.getElementById("spTabs").hidden = holidayMode;
+    document.querySelector('#spTabs [data-tab="holiday"]').hidden = true;
     fillHolForm("", null);
-    setSpTab("flag");
+    setSpTab(holidayMode ? "holiday" : "flag");
     document.getElementById("holOverlay").classList.add("open");
-  });
+  }
+  document.getElementById("holBtn").addEventListener("click", function(){ openSpecial("holiday"); });
+  document.getElementById("flagMenuBtn").addEventListener("click", function(){ openSpecial("flags"); });
   document.getElementById("holCancelBtn").addEventListener("click", function(){
     document.getElementById("holOverlay").classList.remove("open");
   });
@@ -1459,6 +1530,12 @@
     if (e.target === this) this.classList.remove("open");
   });
   document.getElementById("holSaveBtn").addEventListener("click", function(){
+    if (spTab === "flag" && !isWeekdayGroup()){
+      // 點日期時就已存檔,這裡只是關閉視窗
+      document.getElementById("holOverlay").classList.remove("open");
+      showToast("已儲存");
+      return;
+    }
     if (spTab !== "holiday"){
       var sdk = document.getElementById("spDateInput").value;
       if (!sdk){ showToast("請選擇日期"); return; }
