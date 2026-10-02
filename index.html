@@ -538,6 +538,9 @@
   var SHIFT_TYPES = ["白班","小夜","大夜","08~20","12~24","常日","大休","小休","休假"];
   var LEAVE_TYPES = ["特休","身心","補休","公假","事假","病假","例假","其他"];
   var OT_OPTIONS = [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4];
+  // 「其他/手動輸入」班別可選到 10 小時
+  var OT_OPTIONS_MANUAL = [];
+  for (var oi = 0; oi <= 20; oi++) OT_OPTIONS_MANUAL.push(oi / 2);
   var RATE = { otNormal: 1.33, otOver: 1.66 };
 
   var SHIFT_META = {
@@ -1235,7 +1238,7 @@
 
     var otSel = document.getElementById("otInput");
     var curOt = entry.otHours || 0;
-    var otOpts = OT_OPTIONS.slice();
+    var otOpts = (GROUP_CYCLES[STORE.group] ? OT_OPTIONS : OT_OPTIONS_MANUAL).slice();
     if (otOpts.indexOf(curOt) < 0){ otOpts.push(curOt); otOpts.sort(function(a,b){ return a-b; }); }
     otSel.innerHTML = "";
     otOpts.forEach(function(v){
