@@ -111,9 +111,13 @@
   .breakdown.collapsed .bd-chev { transform: rotate(-90deg); }
   .breakdown.collapsed table { display: none; }
   .bd-label { font-size: 15px; }
-  .bd-right { display: flex; align-items: baseline; gap: 4px; }
-  .bd-total { font-family: var(--mono); font-size: 26px; font-weight: 700; color: var(--accent); }
-  .bd-unit { font-size: 13px; color: var(--ink-soft); font-weight: 500; margin-right: 6px; }
+  .bd-right { display: flex; align-items: center; gap: 8px; }
+  .bd-lines { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
+  .bd-line { display: flex; align-items: baseline; gap: 6px; }
+  .bd-name { font-size: 12.5px; font-weight: 600; color: var(--ink-soft); }
+  .bd-num { font-family: var(--mono); font-size: 22px; font-weight: 700; color: var(--accent); min-width: 3.2em; text-align: right; }
+  .bd-cap { font-family: var(--mono); font-size: 13px; color: var(--ink-faint); font-weight: 600; min-width: 2.6em; }
+  .bd-line.over .bd-num, .bd-line.over .bd-cap { color: var(--leave); }
   /* 跟月曆同寬、接在月曆正下方,邊線同色 */
   .day-panel { background: #fff; border: 1px solid #9E9E9E; border-top: none; border-radius: 0; padding: 4px 14px 14px; margin: 0 -14px 12px; }
 
@@ -373,7 +377,13 @@
   <div class="breakdown collapsed" id="breakdownCard">
     <button type="button" class="bd-toggle" id="breakdownToggle" aria-expanded="false">
       <span class="bd-label">本期延長工時合計<small class="bd-range" id="bdRange"></small></span>
-      <span class="bd-right"><span class="bd-total" id="heroOT">0.0</span><span class="bd-unit">小時</span><span class="bd-chev">▾</span></span>
+      <span class="bd-right">
+        <span class="bd-lines">
+          <span class="bd-line"><span class="bd-name">勞基法</span><span class="bd-num" id="heroLaw">0.0</span><span class="bd-cap" id="heroLawCap">/46</span></span>
+          <span class="bd-line"><span class="bd-name">總時數</span><span class="bd-num" id="heroOT">0.0</span><span class="bd-cap" id="heroCap">/60</span></span>
+        </span>
+        <span class="bd-chev">▾</span>
+      </span>
     </button>
     <span id="heroWeighted" hidden></span>
     <table>
@@ -942,9 +952,26 @@
     var r = Math.round(v * 100) / 100;
     return Math.round(r * 10) === r * 10 ? r.toFixed(1) : r.toFixed(2);
   }
+  // 上限:勞基法 46hr;總時數 60hr,期間內有農曆正月初一則 90hr
+  var LAW_KEYS = ["handover","otNormal","otOver","compRestOT","statHoliday"];
+  function periodHasLunarNewYear(periodKey){
+    return periodDates(periodKey).some(function(dk){
+      var h = STORE.holidays[dk];
+      if (h && h.name === "初一") return true;
+      var p = parseKey(dk);
+      return lunarLabel(p.y, p.m, p.d) === "正月";
+    });
+  }
+  function setLimitLine(numId, capId, val, cap){
+    document.getElementById(numId).textContent = fmtHr(val);
+    document.getElementById(capId).textContent = "/" + cap;
+    document.getElementById(numId).parentNode.classList.toggle("over", val > cap);
+  }
   function renderHero(){
     var t = periodTotals(curPeriod);
-    document.getElementById("heroOT").textContent = fmtHr(t.otTotalRaw);
+    var law = LAW_KEYS.reduce(function(sum, k){ return sum + (t[k] || 0); }, 0);
+    setLimitLine("heroLaw", "heroLawCap", law, 46);
+    setLimitLine("heroOT", "heroCap", t.otTotalRaw, periodHasLunarNewYear(curPeriod) ? 90 : 60);
     document.getElementById("heroWeighted").textContent = t.otTotalWeighted.toFixed(2);
   }
 
